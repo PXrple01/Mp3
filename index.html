@@ -15,9 +15,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="juliPod">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Geist:wght@400;500;600;700&family=Jersey+10&display=swap">
+<link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -34,13 +32,10 @@
     <symbol id="i-stop" viewBox="0 0 24 24"><rect fill="currentColor" x="6" y="6" width="12" height="12" rx="1.5"/></symbol>
     <symbol id="i-shuffle" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M16 4h4v4M4 19 20 4M20 16v4h-4M14.5 14.5 20 20M4 5l5 5"/></symbol>
     <symbol id="i-repeat" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M17 2l3 3-3 3M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3M20 13v2a4 4 0 0 1-4 4H4"/></symbol>
-    <symbol id="i-upload" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 15V3.5M7 8.5l5-5 5 5M4.5 14v4.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V14"/></symbol>
-    <symbol id="i-trash" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4 6.5h16M9 6.5V4.5h6v2M6.5 6.5l.9 13a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4l.9-13M10 10.5v6.5M14 10.5v6.5"/></symbol>
     <symbol id="i-lock" viewBox="0 0 24 24"><rect fill="currentColor" x="5" y="10.5" width="14" height="10" rx="2"/><path fill="none" stroke="currentColor" stroke-width="2.2" d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
     <symbol id="i-vol-lo" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15.5 9.5a3.5 3.5 0 0 1 0 5"/></symbol>
     <symbol id="i-vol-hi" viewBox="0 0 24 24"><path fill="currentColor" d="M3 9.5h3.5L11 5.5v13l-4.5-4H3z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M14.5 9.5a3.5 3.5 0 0 1 0 5M17.5 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
-    <symbol id="i-close" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
-    <symbol id="i-share" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M15.5 15.5L20 20"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
   </defs>
 </svg>
@@ -57,7 +52,7 @@
       <a href="#geheimnisse">Geheimnisse</a>
       <a href="#brief">Brief</a>
     </nav>
-    <button class="pill" type="button" data-open-upload>Lieder hinzufügen</button>
+    <button class="pill" type="button" data-act="play" id="nav-play">Musik an</button>
   </div>
 </header>
 
@@ -67,7 +62,7 @@
     <p class="eyebrow reveal"><span>Alles Gute nachträglich, </span><span data-mama>Mama</span></p>
     <h1 class="headline">
       <span class="line reveal">Retro außen.</span>
-      <span class="line reveal grad">Julian innen.</span>
+      <span class="line reveal grad" data-egg="headline">Julian innen.</span>
     </h1>
     <p class="lede reveal">Der juliPod. Vier Player aus der Zeit vor dem Streaming. In jedem wohnt <span data-buddy-name>Julian</span>.</p>
   </section>
@@ -94,7 +89,7 @@
                 <div class="lcd-bar">
                   <span class="lcd-state"><svg><use href="#i-play"/></svg></span>
                   <span class="lcd-head">Jetzt läuft</span>
-                  <span class="batt" aria-hidden="true"><i></i></span>
+                  <span class="batt" data-egg="battery" aria-hidden="true"><i></i></span>
                 </div>
                 <div class="scene-wrap">
                   <canvas class="scene" data-scene="classic" aria-label="Er wohnt hier. Tipp ihn an."></canvas>
@@ -107,8 +102,9 @@
                   <div class="lcd-times"><span data-bind="time">0:00</span><span data-bind="remain">-0:00</span></div>
                 </div>
                 <div class="lcd-menu" hidden>
-                  <div class="lcd-bar"><span class="lcd-head">Lieder</span><span class="lcd-count"></span></div>
+                  <div class="lcd-bar"><span class="lcd-head menu-head">Lieder</span><span class="lcd-count"></span></div>
                   <ul class="menu-list"></ul>
+                  <div class="lcd-note" hidden><p class="note-text"></p></div>
                 </div>
                 <div class="lcd-boot" aria-hidden="true">
                   <canvas class="boot-heart" width="7" height="6"></canvas>
@@ -146,6 +142,7 @@
                     <div class="cs-top">
                       <b class="cs-side">A</b>
                       <span class="cs-title" data-bind="title">Mamas Mixtape</span>
+                      <span class="cs-note" data-johann-b></span>
                       <em>C90</em>
                     </div>
                     <div class="cs-window">
@@ -153,7 +150,7 @@
                       <i class="cs-tape"></i>
                       <div class="reel reel-r"><i class="pack"></i><i class="hub"></i></div>
                     </div>
-                    <div class="cs-bot">Für <span data-mama>Mama</span> ♥</div>
+                    <div class="cs-bot"><span class="cs-a">Für <span data-mama>Mama</span> ♥</span><span class="cs-b">Dein <span data-johann>Johann</span> ♥</span></div>
                   </div>
                   <div class="cs-mouth"><i></i><i></i><i></i></div>
                 </div>
@@ -165,7 +162,7 @@
                   <span class="dg"><i></i></span><span class="dg"><i></i></span><span class="dg"><i></i></span>
                 </div>
                 <span class="tp-led" aria-hidden="true"></span>
-                <span class="tp-label">Stereo · Auto Reverse</span>
+                <button type="button" class="tp-label" data-act="reverse" aria-label="Kassette umdrehen">Stereo · Auto Reverse</button>
                 <span class="tp-model">JP-87</span>
               </div>
             </div>
@@ -178,7 +175,7 @@
       <div class="slot" data-player="stick">
         <div class="fit">
           <div class="device dev-stick">
-            <div class="st-usb" aria-hidden="true"><i></i><i></i></div>
+            <button type="button" class="st-usb" data-act="usb" aria-label="USB-Stecker"><i></i><i></i></button>
             <button class="st-cap" type="button" data-act="cap" aria-label="Kappe abnehmen"><i class="st-loop"></i></button>
             <div class="st-body">
               <div class="st-bezel">
@@ -189,6 +186,7 @@
                     <span class="oled-state" data-bind="state">STOP</span>
                     <span class="oled-time" data-bind="time">0:00</span>
                     <div class="oled-lock"><svg><use href="#i-lock"/></svg><span>HOLD</span></div>
+                    <div class="oled-xfer" aria-hidden="true"><span class="xfer-label">Übertrage Liebe …</span><div class="xfer-bar"><i></i></div><span class="xfer-pct">0 %</span></div>
                   </div>
                 </div>
               </div>
@@ -212,7 +210,7 @@
         <div class="fit">
           <div class="device dev-disc">
             <div class="dc-lid">
-              <span class="dc-ring-text">juliPod Disc · Anti-Skip 45 s</span>
+              <button type="button" class="dc-ring-text" data-act="bonus" aria-label="Bonus-Track">juliPod Disc · Anti-Skip 45 s</button>
               <div class="dc-window screen">
                 <div class="cd"><div class="cd-spin"><span class="cd-label">Mama Mix ♥</span><span class="cd-cap">MP3 · 700 MB</span></div><i class="cd-shine"></i><i class="cd-hole"></i></div>
                 <canvas class="scene" data-scene="disc" aria-label="Er fährt auf der CD mit. Tipp ihn an."></canvas>
@@ -280,18 +278,19 @@
     <div class="wrap">
       <div class="sec-head">
         <h2>Deine Musik.</h2>
-        <p>Lade Lieder von deinem Handy hoch. Sie bleiben auf diesem Gerät gespeichert und spielen auch ohne Internet.</p>
+        <p>Deine Lieblingslieder, von <span data-johann>Johann</span> für dich eingepackt. Tipp ein Lied an, und Julian legt los.</p>
       </div>
 
-      <div class="drop" id="drop">
-        <button type="button" class="cta" data-open-upload><svg><use href="#i-upload"/></svg><span>Lieder auswählen</span></button>
-        <p class="drop-hint" id="drop-hint">MP3, M4A, AAC oder WAV. Auch mehrere auf einmal.</p>
+      <div class="lib-tools">
+        <label class="search" for="search">
+          <svg><use href="#i-search"/></svg>
+          <input type="search" id="search" placeholder="Lied oder Künstler suchen" autocomplete="off" enterkeyhint="search">
+        </label>
       </div>
 
-      <div class="ios-hint" id="ios-hint" hidden>
-        <svg class="ios-hint-ic"><use href="#i-share"/></svg>
-        <p><b>Tipp fürs iPhone:</b> Tippe unten auf „Teilen“ und dann auf „Zum Home-Bildschirm“. Öffne den Player danach über das neue Symbol und lade die Lieder dort hoch. Dann bleiben sie sicher gespeichert.</p>
-        <button type="button" class="ic sm" id="ios-hint-close" aria-label="Tipp ausblenden"><svg><use href="#i-close"/></svg></button>
+      <div class="lib-note" id="lib-note" hidden>
+        <p class="lib-note-text"></p>
+        <button type="button" class="cta" id="lib-note-btn" hidden>Musik freigeben</button>
       </div>
 
       <ol class="tracks" id="tracks"></ol>
@@ -313,7 +312,7 @@
     <div class="wrap">
       <div class="sec-head">
         <h2>Kleine Geheimnisse.</h2>
-        <p>Er hat ein paar Tricks versteckt. <span class="secret-count" id="secret-count">0 von 8</span> gefunden.</p>
+        <p>Er hat ein paar Tricks versteckt. <span class="secret-count" id="secret-count">0 von 12</span> gefunden.</p>
       </div>
       <ul class="secrets" id="secrets"></ul>
     </div>
@@ -323,7 +322,8 @@
     <div class="wrap letter">
       <p class="eyebrow">Ein Brief für dich</p>
       <div class="letter-text" id="letter"></div>
-      <p class="signature" id="signature"></p>
+      <button type="button" class="signature" id="signature" aria-label="Unterschrift"></button>
+      <div class="ps" id="ps" hidden></div>
     </div>
   </section>
 
@@ -331,7 +331,8 @@
 
 <footer class="foot">
   <div class="wrap">
-    <p>Gebaut mit Liebe und ein bisschen Chaos. Herbst 2026.</p>
+    <p><button type="button" class="foot-egg" data-egg="footer">Gebaut mit Liebe und ein bisschen Chaos. Herbst 2026.</button></p>
+    <p class="foot-secret" id="foot-secret" hidden>Johann und Julian haben offiziell festgestellt: beste Mama der Welt. Abstimmung zwei zu null.</p>
   </div>
 </footer>
 
@@ -340,12 +341,10 @@
   <div><b>Fortschritt erzielt!</b><span class="toast-name"></span></div>
 </div>
 <canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
-<input type="file" id="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac" multiple hidden>
 
 <script src="config.js"></script>
 <script src="js/sprite.js"></script>
 <script src="js/synth.js"></script>
-<script src="js/store.js"></script>
 <script src="js/lines.js"></script>
 <script src="js/app.js"></script>
 </body>

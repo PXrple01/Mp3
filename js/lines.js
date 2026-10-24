@@ -98,28 +98,81 @@ window.LINES = {
     "Alle Lieder durch! Nochmal? Ich hab Zeit. Hausaufgaben mach ich später."
   ],
   empty: [
-    "Hier sind noch keine Lieder. Lad welche hoch, dann tanz ich!"
+    "Hier ist noch keine Musik drauf. Johann muss die noch draufmachen. Sag ihm Bescheid!"
   ],
-  upload1: [
-    "Ein neues Lied! Ich hab's eingeräumt. Ordentlicher als mein Zimmer.",
-    "Neues Lied! Danke, {mama}!"
+  needPermission: [
+    "Ich darf deine Musik noch nicht sehen, {mama}. Tipp unten auf „Musik freigeben“."
   ],
-  upload: [
-    "{n} neue Lieder! Ich hab sie eingeräumt. Ordentlicher als mein Zimmer.",
-    "Uiii, {n} neue Lieder! Jetzt wird getanzt."
+  libraryFound: [
+    "Da ist ja deine Musik! Johann hat sie für dich ausgesucht. Drück auf Play, {mama}!"
   ],
-  uploadTemp: [
-    "Die Lieder sind nur da, bis du die Seite zumachst. Speichern klappt hier gerade nicht."
+  libraryNew: [
+    "Neue Lieder! Johann hat nachgelegt. Ich hab sie schon einsortiert."
   ],
-  badFile: [
-    "Das ist kein Lied, {mama}. Das kann ich nicht abspielen."
+  sweet: [
+    "Johann sagt, wir hätten uns keine bessere Mama wünschen können. Ich sag das auch!",
+    "Weißt du, was das Beste an meinem Zuhause ist? Du.",
+    "Du bist meine Lieblings-Mama. Okay, ich hab nur eine. Aber trotzdem!",
+    "Danke, dass du mich lieb hast, auch wenn ich nerv.",
+    "Wenn ich mal groß bin, will ich so nett sein wie du. Aber mit mehr Minecraft.",
+    "Du machst die besten Umarmungen. Das ist wissenschaftlich bewiesen. Von mir.",
+    "Johann und ich haben abgestimmt: Du bist die beste Mama. Zwei zu null.",
+    "Psst. Im Menü vom Klickrad gibt es ganz unten ein Geheimnis."
+  ],
+  battery: [
+    "Akku voll! Mein Akku lädt nur, wenn du da bist, {mama}."
+  ],
+  usb: [
+    "Datenübertragung läuft … 100 Prozent Liebe übertragen!"
+  ],
+  bonus: [
+    "Ein Bonus-Track! Den hat Johann versteckt. Und ich hab geholfen."
+  ],
+  sideB: [
+    "Seite B ist von Johann! Ich hab nicht reingeguckt. Okay, ein bisschen."
+  ],
+  sideA: [
+    "Zurück zu Seite A. Da steht dein Lied drauf."
+  ],
+  notes: [
+    "Die Notizen haben Johann und ich für dich geschrieben."
+  ],
+  psFound: [
+    "Du hast das P.S. gefunden! Das ist von uns beiden."
+  ],
+  footer: [
+    "Johann und ich haben das gebaut. Okay, Johann. Ich war der Tester."
+  ],
+  headline: [
+    "Hey! Da stand gerade mein Name! … Liebe ist aber auch okay."
+  ],
+  shake: [
+    "Erdbeben! … Ach so, du schüttelst nur. Hab dich trotzdem lieb!",
+    "Nicht schütteln, {mama}! Mir wird schlecht. Und schwindelig. Und ich hab dich lieb."
+  ],
+  sign: [
+    "Ich hab ein Schild gebastelt. Für dich!"
+  ],
+  xmas: [
+    "Frohe Weihnachten, {mama}! Ich hab mir eine Mütze geholt. Ho ho ho!"
+  ],
+  newyear: [
+    "Frohes neues Jahr, {mama}! Mein Vorsatz: weniger Mist bauen. Vielleicht."
+  ],
+  halloween: [
+    "Süßes oder Saures, {mama}! Ich hab einen Kürbis mitgebracht."
+  ],
+  easter: [
+    "Frohe Ostern, {mama}! Ich hab Eier gesucht. In Minecraft."
+  ],
+  mothersday: [
+    "Alles Gute zum Muttertag, {mama}! Heute machen Johann und ich alles. Fast alles."
+  ],
+  bday: [
+    "Heute ist dein Geburtstag! Diesmal bin ich pünktlich! Alles Gute, {mama}!"
   ],
   error: [
     "Das Lied klemmt. Ich nehm das nächste."
-  ],
-  remove: [
-    "Tschüss, Lied!",
-    "Weg damit. Ich hab's nicht gelöscht. Doch, ich hab's gelöscht."
   ],
   tap: [
     "Hey! Das kitzelt!",
@@ -181,7 +234,7 @@ window.LINES = {
   capBack: ["Kappe drauf. Sicher ist sicher."],
   menu: ["Such dir ein Lied aus! Dreh am Rad und drück die Mitte."],
   back: ["Da bist du ja wieder! Ich hab dich vermisst."],
-  allFound: ["Du hast alle Geheimnisse gefunden! Du bist ein echter Ninja, {mama}."],
+  allFound: ["Du hast alle Geheimnisse gefunden! Das größte Geheimnis: Johann und ich haben dich unendlich lieb."],
   o_creeper: ["Mein Creeper-Hoodie! Der beste Pulli der Welt. Zsss … BUMM!"],
   o_trainer: ["Pokémon-Trainer Julian! {mama}, ich wähle dich!"],
   o_gruen: ["Grün wie Lloyd! Ich bin der grüne Ninja!"],

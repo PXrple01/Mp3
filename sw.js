@@ -1,8 +1,8 @@
 /* Offline-Speicher: immer zuerst das Netz fragen, ohne Netz die gespeicherte Kopie nehmen. */
-const CACHE = "julipod-v1";
+const CACHE = "julipod-v2";
 const SHELL = [
   "./", "index.html", "styles.css", "config.js",
-  "js/sprite.js", "js/synth.js", "js/store.js", "js/lines.js", "js/app.js",
+  "js/sprite.js", "js/synth.js", "js/lines.js", "js/app.js", "fonts/fonts.css",
   "manifest.webmanifest", "icons/icon.svg", "icons/apple-touch-icon.png", "songs/playlist.json"
 ];
 
@@ -24,9 +24,8 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET" || req.headers.has("range")) return;
   const url = new URL(req.url);
   const same = url.origin === self.location.origin;
-  const font = /^fonts\.(googleapis|gstatic)\.com$/.test(url.hostname);
-  if (!same && !font) return;
-  if (same && /\.(mp3|m4a|aac|wav|ogg|oga|opus|flac)$/i.test(url.pathname)) return;
+  if (!same) return;
+  if (/\.(mp3|m4a|aac|wav|ogg|oga|opus|flac)$/i.test(url.pathname)) return;
   e.respondWith(
     fetch(req)
       .then((res) => {

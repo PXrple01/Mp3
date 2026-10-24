@@ -10,6 +10,8 @@
   const NAME = (CFG.name || "").trim() || "Julian";
   const LINES = window.LINES || {};
   const SP = window.Sprite;
+  const NATIVE = window.JuliPodNative || null;
+  const JOHANN = (CFG.ueberlieferer && CFG.ueberlieferer.name) || "Johann";
 
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -71,8 +73,13 @@
   if (volumeWorks) audio.volume = S.vol;
 
   let actx = null, analyser = null, freq = null, graphTried = false;
+  const sameOrigin = (u) => { try { return new URL(u, location.href).origin === location.origin; } catch (e) { return false; } };
+  function graphAllowed() {
+    if (isIOS || NATIVE) return false;
+    return S.tracks.every((t) => t.kind === "demo" || sameOrigin(t.url));
+  }
   function initGraph() {
-    if (graphTried || isIOS) return;
+    if (graphTried || !graphAllowed()) return;
     graphTried = true;
     try {
       const AC = window.AudioContext || window.webkitAudioContext;
@@ -201,13 +208,16 @@
     if (J.mood === "sleep") Talk.say("wake", { pr: 2 });
     renderStateBits();
     updatePositionState();
+    pushNative();
   });
   audio.addEventListener("pause", () => {
     S.playing = false;
     document.body.classList.remove("is-playing");
     if (!audio.ended && !S.stopping && audio.currentTime > 0.5 && Math.random() < 0.6) Talk.say("pause", { pr: 1 });
     renderStateBits();
+    pushNative();
   });
+  audio.addEventListener("seeked", () => pushNative());
   audio.addEventListener("ended", () => {
     const last = S.idx === S.tracks.length - 1;
     if (document.visibilityState === "visible") { J.mine(); Talk.say("songEnd", { pr: 2 }); }
@@ -326,8 +336,9 @@
       clearInterval(this.typeTimer); clearTimeout(this.hideTimer);
       const who = o.who || "julian";
       bubble.classList.toggle("is-brother", who === "brother");
+      bubble.classList.toggle("is-boys", who === "boys");
       bubble.classList.toggle("is-shout", o.style === "shout");
-      bubbleName.textContent = who === "brother" ? ((CFG.ueberlieferer && CFG.ueberlieferer.titel) || "Mäßiger Überlieferer") : NAME;
+      bubbleName.textContent = who === "brother" ? ((CFG.ueberlieferer && CFG.ueberlieferer.titel) || "Mäßiger Überlieferer") : who === "boys" ? JOHANN + " & " + NAME : NAME;
       live.textContent = bubbleName.textContent + ": " + text;
       this.lastText = text;
       const hold = o.hold || clamp(2400 + text.length * 52, 3000, 8200);
@@ -499,7 +510,8 @@
   /* Kleine Pixel-Schrift für "RUMMS!" */
   const GLYPH = {
     R: ["110", "101", "110", "101", "101"], U: ["101", "101", "101", "101", "111"],
-    M: ["10001", "11011", "10101", "10001", "10001"], S: ["111", "100", "111", "001", "111"], "!": ["1", "1", "1", "0", "1"]
+    M: ["10001", "11011", "10101", "10001", "10001"], S: ["111", "100", "111", "001", "111"], "!": ["1", "1", "1", "0", "1"],
+    A: ["010", "101", "111", "101", "101"]
   };
   function pixText(o, str, x, y, col, shadow) {
     let cx = x;
@@ -573,8 +585,9 @@
       if (t > J.nextWander) { J.tx = 0.1 + Math.random() * 0.8; J.nextWander = t + 4500 + Math.random() * 6000; }
       if (t > J.nextTrick && !Talk.busy()) {
         const r = Math.random();
-        if (r < 0.45) J.setMood("pokeball", 2700);
-        else if (r < 0.7) { J.setMood("hop", 900); J.jump(-46); }
+        if (r < 0.35) J.setMood("pokeball", 2700);
+        else if (r < 0.55) { J.setMood("sign", 3400); if (!LS.get("signSaid", false)) { LS.set("signSaid", true); Talk.say("sign", { pr: 1 }); } }
+        else if (r < 0.78) { J.setMood("hop", 900); J.jump(-46); }
         else J.setMood("wave", 1400);
         J.nextTrick = t + 9000 + Math.random() * 9000;
       }
@@ -594,6 +607,46 @@
       if (J.jy >= 0) { if (J.vy > 70) dust(); J.jy = 0; J.vy = 0; }
     }
     J.tail += dt * (J.mood === "dance" ? 10 : J.moving ? 8 : J.mood === "spin" ? 20 : 3);
+    holidayParticles(dt);
+  }
+
+  /* ═════════ Feiertage ═════════ */
+  function easterDate(y) {
+    const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+    return new Date(y, Math.floor((h + l - 7 * m + 114) / 31) - 1, ((h + l - 7 * m + 114) % 31) + 1);
+  }
+  function holidayOf(d) {
+    const m = d.getMonth() + 1, day = d.getDate(), y = d.getFullYear();
+    const bd = String(CFG.geburtstag || "").split(".").map(Number);
+    if (bd.length >= 2 && bd[0] === day && bd[1] === m) return "bday";
+    if (m === 12 && day >= 24 && day <= 26) return "xmas";
+    if ((m === 12 && day === 31) || (m === 1 && day === 1)) return "newyear";
+    if (m === 10 && day === 31) return "halloween";
+    if (m === 5) { const first = new Date(y, 4, 1).getDay(); if (day === 1 + ((7 - first) % 7) + 7) return "mothersday"; }
+    const e = easterDate(y), diff = Math.round((new Date(y, m - 1, day) - e) / 86400000);
+    if (diff === 0 || diff === 1) return "easter";
+    return null;
+  }
+  const HOLIDAY = holidayOf(new Date());
+  const SANTA = ["........WW", "......RRW.", "...RRRRR..", ".RRRRRRRR.", "WWWWWWWWWW"];
+  const PUMPKIN = ["..g...", ".OOOO.", "OoOOoO", "OOooOO", ".OOOO."];
+  const PUMPKIN_PAL = { O: "#ff8c1a", o: "#3a1800", g: "#4a7a2a" };
+  const EGG = [".E.", "EEE", "FFF", ".F."];
+  const EGG_PAL = { E: "#ff8fc8", F: "#7fd6ff" };
+  function holidayParticles(dt) {
+    const sc = active();
+    if (!sc || !sc.W || !HOLIDAY) return;
+    if (HOLIDAY === "xmas" && Math.random() < dt * 7) Parts.add({ x: Math.random() * sc.W, y: -1, vx: (Math.random() - 0.5) * 4, vy: 5 + Math.random() * 4, life: 8, color: "#ffffff", wob: 1 });
+    if (HOLIDAY === "newyear" && Math.random() < dt * 0.7) {
+      const fx = 6 + Math.random() * (sc.W - 12), fy = 3 + Math.random() * (sc.ground * 0.4);
+      const col = ["#ffd23f", "#ff5a7a", "#4fb4ff", "#9bff6a"][Math.floor(Math.random() * 4)];
+      for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; Parts.add({ x: fx, y: fy, vx: Math.cos(a) * 14, vy: Math.sin(a) * 14, g: 10, life: 0.9, color: col, fade: true }); }
+    }
+    if ((HOLIDAY === "bday" || HOLIDAY === "mothersday") && Math.random() < dt * 0.8) {
+      Parts.add({ x: Math.random() * sc.W, y: sc.ground - 2, vx: 0, vy: -7, life: 3.5, map: SP.maps.HEART_S, pal: { R: "#ff4d6d" }, wob: 1, fade: true });
+    }
   }
 
   function poseJ(t) {
@@ -616,6 +669,7 @@
       case "sleep": p.eyes = "closed"; p.headDy = (t % 3200) < 1600 ? 1 : 0; p.mouth = "flat"; p.look = 0; break;
       case "wave": p.armR = "wave"; p.eyes = "happy"; p.mouth = "grin"; break;
       case "hop": p.armL = p.armR = "up"; p.mouth = "grin"; break;
+      case "sign": p.armL = p.armR = "up"; p.eyes = "happy"; p.mouth = "grin"; p.look = 0; break;
       case "love": p.prop = "heart"; p.armL = p.armR = "front"; p.eyes = "happy"; p.blush = true; p.mouth = "grin"; break;
       case "spin": p.armL = p.armR = "up"; p.eyes = "closed"; p.dir = Math.floor(t / 70) % 2 ? 1 : -1; p.mouth = "o"; break;
       case "dizzy": p.eyes = "dizzy"; p.mouth = "o"; p.dx = Math.round(Math.sin(t * 0.008)); break;
@@ -685,7 +739,17 @@
         if (J.mineS.hits >= 1) { o.fillRect(bx + 2, by + 1, 1, 2); o.fillRect(bx + 3, by + 3, 1, 1); }
         if (J.mineS.hits >= 2) { o.fillRect(bx + 4, by + 2, 1, 3); o.fillRect(bx + 1, by + 4, 2, 1); }
       }
+      if (HOLIDAY === "halloween") SP.blit(o, PUMPKIN, sc.xOf(J.xr < 0.5 ? 0.95 : 0.05) + 2, gy - 4, PUMPKIN_PAL);
+      if (HOLIDAY === "easter") SP.blit(o, EGG, sc.xOf(J.xr < 0.5 ? 0.95 : 0.05) + 4, gy - 3, EGG_PAL);
       SP.drawJulian(o, x, y, p, pal);
+      const hy = y + (p.headDy || 0);
+      if (HOLIDAY === "xmas") SP.blit(o, SANTA, x, hy - 3, SP.BASE);
+      if (J.mood === "sign") {
+        o.fillStyle = "#8a5a2b"; o.fillRect(x - 1, hy - 3, 1, 8); o.fillRect(x + 10, hy - 3, 1, 8);
+        o.fillStyle = "#5e3a1a"; o.fillRect(x - 6, hy - 11, 22, 8);
+        o.fillStyle = "#fffaf0"; o.fillRect(x - 5, hy - 10, 20, 6);
+        pixText(o, "MAMA", x - 4, hy - 10, "#e3343c");
+      }
       if (J.mood === "spin") tornado(o, x + 5, gy, t, true, pal);
       if (J.mood === "dizzy") {
         for (let i = 0; i < 3; i++) {
@@ -1044,6 +1108,7 @@
     renderNowArt();
     markCurrentRow();
     if (menuOpen) renderMenu();
+    pushNative();
   }
   function renderStateBits() {
     const use = $(".lcd-state use");
@@ -1051,6 +1116,8 @@
     $$(".key-play").forEach((k) => k.classList.toggle("is-down", S.playing));
     const pb = $(".now .play-btn");
     if (pb) pb.setAttribute("aria-label", S.playing ? "Pause" : "Abspielen");
+    const np = $("#nav-play");
+    if (np) np.textContent = S.playing ? "Pause" : "Musik an";
     setBind("state", S.hold ? "HOLD" : S.playing ? "PLAY" : audio.currentTime > 0.3 ? "PAUSE" : "STOP");
     $(".dc-esp").classList.toggle("on", S.playing);
     markCurrentRow();
@@ -1070,7 +1137,10 @@
   let volHintShown = false;
   function wheelStep(s) {
     tick(); vibrate(4);
-    if (menuOpen) { menuSel = clamp(menuSel + s, 0, Math.max(0, S.tracks.length - 1)); renderMenu(); return; }
+    if (menuOpen) {
+      if (menuMode === "note") { const n = $(".lcd-note"); n.scrollTop += s * 16; return; }
+      menuSel = clamp(menuSel + s, 0, Math.max(0, menuItems().length - 1)); renderMenu(); return;
+    }
     if (volumeWorks) setVolume(S.vol + s * 0.04);
     else { seekBy(s * 4); if (!volHintShown) { volHintShown = true; Talk.say("volHint", { pr: 1 }); } }
   }
@@ -1130,44 +1200,180 @@
     setTimeout(() => r.remove(), 520);
   }
 
-  /* Menü auf dem Klickrad-Display */
-  let menuOpen = false, menuSel = 0;
-  const menuEl = $(".lcd-menu"), menuList = $(".menu-list"), menuCount = $(".lcd-count");
-  function toggleMenu() { if (menuOpen) closeMenu(); else openMenu(); }
+  /* Menü auf dem Klickrad-Display: Lieder, ganz unten Extras mit Notizen */
+  let menuOpen = false, menuSel = 0, menuMode = "songs", noteSel = 0;
+  const NOTES = (CFG.notizen || []).filter((n) => n && n.text);
+  const menuEl = $(".lcd-menu"), menuList = $(".menu-list"), menuCount = $(".lcd-count"), menuHead = $(".menu-head"), noteBox = $(".lcd-note");
+  function menuItems() {
+    if (menuMode === "extras") return NOTES.map((n) => n.titel || "Notiz");
+    return S.tracks.map((t) => t.title).concat(NOTES.length ? ["Extras"] : []);
+  }
+  function toggleMenu() {
+    if (!menuOpen) { openMenu(); return; }
+    if (menuMode === "note") { menuMode = "extras"; menuSel = noteSel; renderMenu(); }
+    else if (menuMode === "extras") { menuMode = "songs"; menuSel = S.tracks.length; renderMenu(); }
+    else closeMenu();
+  }
   function openMenu() {
-    menuOpen = true; menuEl.hidden = false; menuSel = Math.max(0, S.idx); renderMenu();
+    menuOpen = true; menuMode = "songs"; menuEl.hidden = false; menuSel = Math.max(0, S.idx); renderMenu();
     if (!LS.get("menuSeen", false)) { LS.set("menuSeen", true); Talk.say("menu", { pr: 1 }); }
   }
-  function closeMenu() { menuOpen = false; if (menuEl) menuEl.hidden = true; }
+  function closeMenu() { menuOpen = false; menuMode = "songs"; if (menuEl) menuEl.hidden = true; }
   function renderMenu() {
     menuList.innerHTML = "";
-    menuCount.textContent = S.tracks.length ? (menuSel + 1) + "/" + S.tracks.length : "";
-    if (!S.tracks.length) {
-      const li = document.createElement("li"); li.className = "empty"; li.textContent = "Noch keine Lieder. Lade unten welche hoch.";
-      menuList.appendChild(li); return;
+    if (menuMode === "note") {
+      const n = NOTES[noteSel] || {};
+      menuHead.textContent = n.titel || "Notiz"; menuCount.textContent = "";
+      noteBox.hidden = false; noteBox.scrollTop = 0;
+      $(".note-text", noteBox).textContent = fill(n.text || "");
+      return;
     }
-    S.tracks.forEach((t, i) => {
+    noteBox.hidden = true;
+    menuHead.textContent = menuMode === "extras" ? "Notizen" : "Lieder";
+    const items = menuItems();
+    menuCount.textContent = items.length ? (menuSel + 1) + "/" + items.length : "";
+    items.forEach((label, i) => {
       const li = document.createElement("li");
-      li.textContent = (i === S.idx && S.playing ? "♪ " : "") + t.title;
+      const isExtra = menuMode === "songs" && i === S.tracks.length;
+      li.textContent = (menuMode === "songs" && i === S.idx && S.playing ? "♪ " : "") + label;
       li.dataset.i = i;
-      if (i === menuSel) li.className = "sel";
+      li.className = (i === menuSel ? "sel" : "") + (isExtra ? " extra" : "");
       menuList.appendChild(li);
     });
     const rowH = 20, h = menuList.clientHeight || 120;
-    menuList.scrollTop = clamp(menuSel * rowH - h / 2 + rowH / 2, 0, S.tracks.length * rowH);
+    menuList.scrollTop = clamp(menuSel * rowH - h / 2 + rowH / 2, 0, items.length * rowH);
   }
   menuList.addEventListener("click", (e) => {
     const li = e.target.closest("li[data-i]");
     if (!li) return;
     menuSel = +li.dataset.i; tick(); menuSelectNow();
   });
-  function menuSelectNow() { closeMenu(); setTrack(menuSel, true); }
+  noteBox.addEventListener("click", () => { tick(); toggleMenu(); });
+  function menuSelectNow() {
+    if (menuMode === "songs") {
+      if (menuSel >= S.tracks.length) { menuMode = "extras"; menuSel = 0; renderMenu(); return; }
+      closeMenu(); setTrack(menuSel, true); return;
+    }
+    if (menuMode === "extras") {
+      noteSel = menuSel; menuMode = "note"; renderMenu();
+      unlock("notes");
+      Talk.say("notes", { pr: 1 });
+      return;
+    }
+    toggleMenu();
+  }
+
+  /* Versteckte Kleinigkeiten in den Playern */
+  let sideB = false, flipBusy = false;
+  function flipTape() {
+    if (flipBusy) return;
+    flipBusy = true;
+    const cas = $(".cassette");
+    S.reelBurst = now() + 500;
+    cas.classList.add("flipping");
+    setTimeout(() => {
+      sideB = !sideB;
+      cas.classList.toggle("side-b", sideB);
+      $(".cs-side").textContent = sideB ? "B" : "A";
+      cas.classList.remove("flipping");
+      setTimeout(() => { flipBusy = false; }, 360);
+      if (sideB) {
+        unlock("sideb");
+        const long = CFG.ueberlieferer && CFG.ueberlieferer.seiteBLang;
+        const items = [];
+        if (long) items.push({ text: long, who: "brother", pr: 3 });
+        if (LINES.sideB) items.push({ text: LINES.sideB[0], who: "julian", pr: 3 });
+        Talk.chain(items);
+      } else Talk.say("sideA", { pr: 1 });
+    }, 330);
+  }
+  let xferBusy = false;
+  function usbTransfer() {
+    if (xferBusy || !S.capOff) return;
+    xferBusy = true;
+    const box = $(".oled-xfer"), bar = $(".xfer-bar i"), pct = $(".xfer-pct"), label = $(".xfer-label");
+    label.textContent = "Übertrage Liebe …";
+    bar.style.width = "0";
+    box.classList.add("show");
+    let p = 0;
+    const iv = setInterval(() => {
+      p = Math.min(100, p + 4 + Math.random() * 9);
+      bar.style.width = p + "%";
+      pct.textContent = Math.round(p) + " %";
+      if (p >= 100) {
+        clearInterval(iv);
+        label.textContent = "Fertig!";
+        pct.textContent = "Du bist unser Zuhause.";
+        Talk.say("usb", { pr: 2 });
+        vibrate(20);
+        setTimeout(() => { box.classList.remove("show"); xferBusy = false; }, 4200);
+      }
+    }, 120);
+  }
+  let bonusBusy = false;
+  function bonusTrack() {
+    if (bonusBusy) return;
+    bonusBusy = true;
+    const lbl = $(".cd-label"), old = lbl.textContent;
+    lbl.textContent = "Bonus ♥";
+    $(".dc-track").textContent = "00";
+    setMarquee($(".dc-title"), "Bonus-Track ♥");
+    const items = [];
+    if (CFG.bonusTrack) items.push({ text: CFG.bonusTrack, who: "boys", pr: 3 });
+    if (LINES.bonus) items.push({ text: LINES.bonus[0], who: "julian", pr: 3 });
+    Talk.chain(items);
+    unlock("bonus");
+    floatHearts();
+    setTimeout(() => { lbl.textContent = old; bonusBusy = false; delete lastBind.title; delete lastBind.trackno; renderTrack(); }, 9000);
+  }
+  function setupEggs() {
+    const batt = $('[data-egg="battery"]');
+    if (batt) batt.addEventListener("click", () => { bumpInput(); showHud("Akku: 100 % Liebe", 1); Talk.say("battery", { pr: 1 }); });
+    const head = $('[data-egg="headline"]');
+    let headBusy = false;
+    if (head) head.addEventListener("click", () => {
+      if (headBusy) return;
+      headBusy = true;
+      const old = head.textContent;
+      head.textContent = "Liebe innen.";
+      head.classList.remove("egg-pop"); void head.offsetWidth; head.classList.add("egg-pop");
+      Talk.say("headline", { pr: 1 });
+      setTimeout(() => { head.textContent = old; head.classList.remove("egg-pop"); headBusy = false; }, 4500);
+    });
+    const foot = $('[data-egg="footer"]');
+    if (foot) foot.addEventListener("click", () => { $("#foot-secret").hidden = false; Talk.say("footer", { pr: 1 }); });
+    $("#signature").addEventListener("click", () => {
+      const ps = $("#ps");
+      if (!ps.hidden) return;
+      ps.innerHTML = "";
+      (CFG.ps || []).forEach((line) => { const p = document.createElement("p"); p.textContent = fill(line); ps.appendChild(p); });
+      ps.hidden = false;
+      unlock("ps");
+      Talk.say("psFound", { pr: 2 });
+    });
+    // Schütteln (Android)
+    let shakeT = 0, shakeHits = 0, lastShake = 0;
+    window.addEventListener("devicemotion", (e) => {
+      const a = e.accelerationIncludingGravity || e.acceleration;
+      if (!a || a.x == null) return;
+      const g = Math.sqrt(a.x * a.x + a.y * a.y + a.z * a.z), t = now();
+      if (g < 24) return;
+      shakeHits = t - shakeT < 700 ? shakeHits + 1 : 1;
+      shakeT = t;
+      if (shakeHits >= 3 && t - lastShake > 8000 && !J.hidden && !Door.active && !(Intro.active && Intro.phase !== "after")) {
+        lastShake = t; shakeHits = 0;
+        J.setMood("dizzy", 2200); J.jump(-60);
+        Talk.say("shake", { pr: 2 });
+        vibrate(40);
+      }
+    });
+  }
 
   /* Zentrale Aktionen */
   function act(a, el) {
     bumpInput();
     const dev = el && el.closest && el.closest(".device");
-    if (dev && dev.classList.contains("dev-stick") && S.hold && a !== "hold" && a !== "cap") {
+    if (dev && dev.classList.contains("dev-stick") && S.hold && a !== "hold" && a !== "cap" && a !== "usb") {
       const lock = $(".oled-lock"); lock.classList.add("flash"); setTimeout(() => lock.classList.remove("flash"), 900);
       Talk.say("holdBlocked", { pr: 1 });
       return;
@@ -1198,6 +1404,9 @@
         if (S.capOff) unlock("cap");
         break;
       }
+      case "reverse": flipTape(); break;
+      case "usb": usbTransfer(); break;
+      case "bonus": bonusTrack(); break;
       default: break;
     }
   }
@@ -1279,173 +1488,177 @@
   }
 
   /* ═════════ Bibliothek ═════════ */
-  const tracksEl = $("#tracks");
+  const tracksEl = $("#tracks"), libNote = $("#lib-note"), searchEl = $("#search");
   function demoTrack() {
     return { id: "demo", kind: "demo", title: "Happy Birthday, " + MAMA + "!", artist: NAME + " · 8-Bit-Ständchen", duration: window.Synth.duration, cover: null };
   }
-  async function loadLibrary() {
+  async function fetchTracks() {
     const list = [];
-    if (CFG.demoLied && !LS.get("demoHidden", false)) list.push(demoTrack());
-    try {
-      const r = await fetch("songs/playlist.json", { cache: "no-cache" });
-      if (r.ok) {
-        const j = await r.json();
-        (Array.isArray(j) ? j : (j.lieder || [])).forEach((e) => {
-          const file = e && (e.datei || e.file);
-          if (!file) return;
-          list.push({ id: "url:" + file, kind: "url", title: e.titel || e.title || file.replace(/\.[^.]+$/, ""), artist: e.kuenstler || e.artist || "", duration: 0, url: "songs/" + encodeURI(file), cover: null });
-        });
-      }
-    } catch (e) { }
-    let recs = [];
-    try { recs = await window.Store.all(); } catch (e) { }
-    recs.sort((a, b) => a.added - b.added).forEach((r) => list.push(fromRec(r)));
+    let state = "ok";
+    if (NATIVE) {
+      try {
+        const res = JSON.parse(NATIVE.library(String(CFG.musikOrdner || "juliPod")));
+        if (res.needPermission) state = "permission";
+        (res.tracks || []).forEach((t) => list.push({
+          id: "n" + t.id, nid: t.id, kind: "native", title: t.title || "Unbekanntes Lied", artist: t.artist || "",
+          album: t.album || "", duration: t.duration || 0, url: t.url, cover: t.cover || null
+        }));
+      } catch (e) { }
+    } else {
+      try {
+        const r = await fetch("songs/playlist.json", { cache: "no-cache" });
+        if (r.ok) {
+          const j = await r.json();
+          (Array.isArray(j) ? j : (j.lieder || [])).forEach((e) => {
+            const src = e && (e.url || ((e.datei || e.file) ? "songs/" + encodeURI(e.datei || e.file) : null));
+            if (!src) return;
+            const name = e.titel || e.title || decodeURIComponent(src.split("/").pop()).replace(/\.[^.]+$/, "");
+            list.push({ id: "url:" + src, kind: "url", title: name, artist: e.kuenstler || e.artist || "", album: e.album || "", duration: 0, url: src, cover: e.cover || null });
+          });
+        }
+      } catch (e) { }
+    }
+    if (state === "ok" && !list.length) state = "empty";
+    return { list, state };
+  }
+  async function loadLibrary(isReload) {
+    const res = await fetchTracks();
+    const list = res.list;
+    if (CFG.demoLied) list.unshift(demoTrack());
+    const curId = cur() ? cur().id : LS.get("last", null);
+    const hadSongs = S.tracks.some((t) => t.kind !== "demo");
+    const same = S.tracks.map((t) => t.id).join("|") === list.map((t) => t.id).join("|");
+    S.libState = res.state;
+    renderLibNote();
+    if (isReload && same) return;
     S.tracks = list;
-    const last = LS.get("last", null);
-    const i = list.findIndex((t) => String(t.id) === String(last));
+    const i = list.findIndex((t) => String(t.id) === String(curId));
     S.idx = list.length ? (i >= 0 ? i : 0) : -1;
-    renderLibrary();
-    renderTrack();
-    renderStateBits();
+    renderLibrary(); renderTrack(); renderStateBits();
+    const hasSongs = list.some((t) => t.kind !== "demo");
+    if (isReload && hasSongs) Talk.say(hadSongs ? "libraryNew" : "libraryFound", { pr: 2 });
+    else if (!isReload && res.state === "permission") setTimeout(() => Talk.say("needPermission", { pr: 2 }), 6000);
   }
-  function fromRec(r) {
-    return { id: r.id, kind: r.temp ? "temp" : "db", title: r.title, artist: r.artist, duration: r.duration, url: URL.createObjectURL(r.blob), cover: r.cover ? URL.createObjectURL(r.cover) : null };
+  function renderLibNote() {
+    const st = S.libState, txt = $(".lib-note-text", libNote), btn = $("#lib-note-btn");
+    const folder = CFG.musikOrdner || "juliPod";
+    if (st === "permission") {
+      libNote.hidden = false; btn.hidden = false;
+      txt.textContent = "Der juliPod braucht einmal deine Erlaubnis, damit er die Musik auf deinem Handy abspielen darf.";
+    } else if (st === "empty") {
+      libNote.hidden = false; btn.hidden = true;
+      txt.textContent = NATIVE
+        ? "Hier ist noch keine Musik. " + JOHANN + " legt sie auf deinem Handy in den Ordner „Musik/" + folder + "“."
+        : "Hier kommt deine Musik hin. " + JOHANN + " kümmert sich darum.";
+    } else libNote.hidden = true;
   }
+  $("#lib-note-btn").addEventListener("click", () => { if (NATIVE && NATIVE.requestPermission) NATIVE.requestPermission(); });
 
   function renderLibrary() {
     tracksEl.innerHTML = "";
-    if (!S.tracks.length) {
-      const li = document.createElement("li");
-      li.innerHTML = '<span class="empty">Noch keine Lieder. Tippe auf „Lieder auswählen“, dann zieht Julian sie hier ein.</span>';
-      tracksEl.appendChild(li);
-    }
+    const frag = document.createDocumentFragment();
     S.tracks.forEach((t, i) => {
       const li = document.createElement("li");
       li.dataset.i = i;
+      li.dataset.q = (t.title + " " + (t.artist || "") + " " + (t.album || "")).toLowerCase();
       li.style.animationDelay = Math.min(i, 12) * 0.03 + "s";
       const main = document.createElement("button");
       main.type = "button"; main.className = "tr-main";
       main.setAttribute("aria-label", t.title + " abspielen");
       const thumb = document.createElement("span"); thumb.className = "tr-thumb";
-      const img = document.createElement("img"); img.alt = ""; img.src = t.cover || thumbData();
+      const img = document.createElement("img"); img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+      if (t.cover) img.onerror = () => { img.onerror = null; t.cover = null; img.src = thumbData(); };
+      img.src = t.cover || thumbData();
       thumb.appendChild(img);
       const eq = document.createElement("span"); eq.className = "tr-eq"; eq.innerHTML = "<i></i><i></i><i></i>"; thumb.appendChild(eq);
       const text = document.createElement("span"); text.className = "tr-text";
       const ti = document.createElement("span"); ti.className = "tr-title"; ti.textContent = t.title;
-      const su = document.createElement("span"); su.className = "tr-sub"; su.textContent = t.artist || (t.kind === "temp" ? "Nur bis zum Schließen" : "Unbekannt");
+      const su = document.createElement("span"); su.className = "tr-sub"; su.textContent = t.artist || t.album || "Unbekannt";
       ti.style.display = su.style.display = "block";
       text.append(ti, su);
       const du = document.createElement("span"); du.className = "tr-dur"; du.textContent = t.duration ? fmt(t.duration) : "";
       main.append(thumb, text, du);
       li.appendChild(main);
-      if (t.kind !== "url") {
-        const del = document.createElement("button");
-        del.type = "button"; del.className = "tr-del"; del.setAttribute("aria-label", t.title + " löschen");
-        del.innerHTML = '<svg><use href="#i-trash"/></svg>';
-        li.appendChild(del);
-      }
-      tracksEl.appendChild(li);
+      frag.appendChild(li);
     });
+    tracksEl.appendChild(frag);
+    applySearch();
     markCurrentRow();
     renderLibFoot();
     if (menuOpen) renderMenu();
   }
-  async function renderLibFoot() {
+  function renderLibFoot() {
+    const songs = S.tracks.filter((t) => t.kind !== "demo");
     const foot = $("#lib-foot");
-    const n = S.tracks.length;
-    let txt = n === 1 ? "1 Lied" : n + " Lieder";
-    const total = S.tracks.reduce((s, t) => s + (t.duration || 0), 0);
-    if (total > 0) { const m = Math.max(1, Math.round(total / 60)); txt += " · " + m + (m === 1 ? " Minute" : " Minuten") + " Musik"; }
-    try {
-      const u = await window.Store.usage();
-      if (u > 1024 * 1024) txt += " · " + (u / 1024 / 1024).toFixed(0) + " MB auf diesem Gerät";
-    } catch (e) { }
-    foot.textContent = txt + ". ";
-    if (CFG.demoLied && LS.get("demoHidden", false)) {
-      const b = document.createElement("button");
-      b.type = "button"; b.textContent = "Geburtstagslied zurückholen";
-      b.addEventListener("click", () => { LS.set("demoHidden", false); S.tracks.unshift(demoTrack()); if (S.idx >= 0) S.idx++; else S.idx = 0; renderLibrary(); renderTrack(); });
-      foot.appendChild(b);
+    if (!songs.length) { foot.textContent = ""; return; }
+    let txt = songs.length === 1 ? "1 Lied" : songs.length + " Lieder";
+    const total = songs.reduce((sum, t) => sum + (t.duration || 0), 0);
+    if (total > 0) {
+      const h = Math.floor(total / 3600), m = h ? Math.round((total % 3600) / 60) : Math.max(1, Math.round(total / 60));
+      txt += " · " + (h ? h + " Std. " : "") + m + " Min. Musik";
     }
+    foot.textContent = txt + ".";
   }
+  function applySearch() {
+    const q = (searchEl.value || "").trim().toLowerCase();
+    let shown = 0;
+    $$("#tracks li[data-i]").forEach((li) => { const ok = !q || li.dataset.q.indexOf(q) >= 0; li.hidden = !ok; if (ok) shown++; });
+    let none = $("#tracks .no-hit");
+    if (q && !shown) {
+      if (!none) { none = document.createElement("li"); none.className = "no-hit"; none.innerHTML = '<span class="empty"></span>'; tracksEl.appendChild(none); }
+      none.firstChild.textContent = "Nichts gefunden für „" + searchEl.value.trim() + "“.";
+    } else if (none) none.remove();
+  }
+  searchEl.addEventListener("input", applySearch);
+  searchEl.addEventListener("keydown", (e) => { if (e.key === "Enter") searchEl.blur(); });
   function markCurrentRow() {
     $$("#tracks li[data-i]").forEach((li) => li.classList.toggle("is-current", +li.dataset.i === S.idx));
   }
   tracksEl.addEventListener("click", (e) => {
     const li = e.target.closest("li[data-i]");
     if (!li) return;
-    const i = +li.dataset.i;
-    const del = e.target.closest(".tr-del");
-    if (del) {
-      if (!del.classList.contains("confirm")) {
-        $$(".tr-del.confirm").forEach((d) => { d.classList.remove("confirm"); d.innerHTML = '<svg><use href="#i-trash"/></svg>'; });
-        del.classList.add("confirm"); del.textContent = "Löschen";
-        setTimeout(() => { if (del.isConnected && del.classList.contains("confirm")) { del.classList.remove("confirm"); del.innerHTML = '<svg><use href="#i-trash"/></svg>'; } }, 3500);
-        return;
-      }
-      removeTrack(i);
-      return;
-    }
     bumpInput();
+    const i = +li.dataset.i;
     if (i === S.idx) toggle(); else setTrack(i, true);
   });
-  async function removeTrack(i) {
-    const t = S.tracks[i];
-    if (!t) return;
-    const wasCur = i === S.idx;
-    if (t.kind === "demo") LS.set("demoHidden", true);
-    else if (t.kind === "db") { try { await window.Store.remove(t.id); } catch (e) { } }
-    if (t.url && t.kind !== "url") URL.revokeObjectURL(t.url);
-    S.tracks.splice(i, 1);
-    if (wasCur) {
-      audio.pause(); audio.removeAttribute("src"); audio.dataset.tid = ""; audio.load();
-      S.idx = S.tracks.length ? Math.min(i, S.tracks.length - 1) : -1;
-    } else if (i < S.idx) S.idx--;
-    Talk.say("remove", { pr: 1 });
-    renderLibrary(); renderTrack(); renderStateBits();
-  }
 
-  /* Hochladen */
-  const fileInput = $("#file"), drop = $("#drop"), dropHint = $("#drop-hint");
-  const AUDIO_EXT = /\.(mp3|m4a|aac|wav|ogg|oga|opus|flac|aif|aiff|mp4)$/i;
-  $$("[data-open-upload]").forEach((b) => b.addEventListener("click", () => {
-    if (b.closest(".nav")) $("#musik").scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
-    fileInput.click();
-  }));
-  fileInput.addEventListener("change", () => { handleFiles(fileInput.files); fileInput.value = ""; });
-  ["dragenter", "dragover"].forEach((ev) => document.addEventListener(ev, (e) => { if (hasFiles(e)) { e.preventDefault(); drop.classList.add("is-over"); } }));
-  ["dragleave", "drop"].forEach((ev) => document.addEventListener(ev, (e) => { if (ev === "dragleave" && e.relatedTarget) return; drop.classList.remove("is-over"); }));
-  document.addEventListener("drop", (e) => { if (hasFiles(e)) { e.preventDefault(); handleFiles(e.dataTransfer.files); } });
-  function hasFiles(e) { return e.dataTransfer && Array.from(e.dataTransfer.types || []).indexOf("Files") >= 0; }
-
-  async function handleFiles(files) {
-    const arr = Array.from(files || []).filter((f) => (f.type && f.type.indexOf("audio/") === 0) || AUDIO_EXT.test(f.name));
-    if (!arr.length) { if (files && files.length) Talk.say("badFile", { pr: 2 }); return; }
-    bumpInput();
-    drop.classList.add("is-busy");
-    const oldHint = "MP3, M4A, AAC oder WAV. Auch mehrere auf einmal.";
-    let done = 0, temp = false;
-    const firstNew = S.tracks.length;
-    for (const f of arr) {
-      dropHint.textContent = "Julian räumt ein: " + (done + 1) + " von " + arr.length + " …";
+  /* ═════════ Android-App ═════════ */
+  let nativeTimer = 0;
+  function pushNative() {
+    if (!NATIVE || !NATIVE.state) return;
+    clearTimeout(nativeTimer);
+    const send = () => {
+      const t = cur();
       try {
-        const rec = await window.Store.importFile(f);
-        if (rec.temp) temp = true;
-        S.tracks.push(fromRec(rec));
-        done++;
-        renderLibrary();
+        NATIVE.state(JSON.stringify({
+          id: t && t.nid != null ? t.nid : -1, title: t ? t.title : "juliPod", artist: t ? (t.artist || NAME) : NAME,
+          playing: S.playing, pos: audio.currentTime || 0, dur: isFinite(audio.duration) ? audio.duration : ((t && t.duration) || 0)
+        }));
       } catch (e) { }
-    }
-    drop.classList.remove("is-busy");
-    dropHint.textContent = oldHint;
-    if (!done) { Talk.say("badFile", { pr: 2 }); return; }
-    window.Store.persist();
-    if (temp) Talk.say("uploadTemp", { pr: 3 });
-    else Talk.say(done === 1 ? "upload1" : "upload", { pr: 3, n: done });
-    J.spin(900);
-    if (S.idx < 0 || (!S.playing && cur() && cur().kind === "demo" && firstNew <= 1)) { S.idx = firstNew; renderTrack(); }
-    markCurrentRow();
+    };
+    // Kurze Pausen zwischen zwei Liedern nicht melden, sonst flackert die Benachrichtigung.
+    if (S.playing) send(); else nativeTimer = setTimeout(send, 1500);
   }
+  window.juliPodNative = {
+    remote(cmd, arg) {
+      bumpInput();
+      if (cmd === "play") play();
+      else if (cmd === "pause") pause();
+      else if (cmd === "toggle") toggle();
+      else if (cmd === "next") next();
+      else if (cmd === "prev") prev();
+      else if (cmd === "seek" && isFinite(+arg)) { audio.currentTime = +arg; pushNative(); }
+    },
+    onLibraryChanged(reason) {
+      loadLibrary(true).then(() => {
+        // Das Intro wartet, bis Android die Erlaubnis-Abfrage geschlossen hat.
+        if (S.introPending && (reason === "permission" || S.libState !== "permission")) {
+          S.introPending = false;
+          setTimeout(startIntro, 700);
+        }
+      });
+    }
+  };
 
   /* ═════════ Outfits ═════════ */
   function applyOutfit(key, animate) {
@@ -1561,7 +1774,11 @@
     { k: "diamond", name: "Diamanten!", hint: "Hör ein Lied bis zum Ende.", icon: "diamond" },
     { k: "hold", name: "Gesperrt", hint: "Schieb den HOLD-Schalter am Stick.", icon: "lock" },
     { k: "cap", name: "USB-Forscherin", hint: "Nimm dem Stick die Kappe ab.", icon: "usb" },
-    { k: "players", name: "Sammlerin", hint: "Probier alle vier Player aus.", icon: "note" }
+    { k: "players", name: "Sammlerin", hint: "Probier alle vier Player aus.", icon: "note" },
+    { k: "sideb", name: "Seite B", hint: "Drück an der Kassette auf „Auto Reverse“.", icon: "tape" },
+    { k: "bonus", name: "Bonus-Track", hint: "Tipp auf die Schrift am CD-Deckel.", icon: "disc" },
+    { k: "notes", name: "Notizen", hint: "Im Klickrad-Menü ganz nach unten drehen.", icon: "paper" },
+    { k: "ps", name: "Geheimes P.S.", hint: "Tipp im Brief auf die Unterschrift.", icon: "letter" }
   ];
   const ICONS = {
     door: { map: ["nnnnnnn", "neeeeen", "nebbben", "nebWben", "neeeeen", "nebbbgn", "nebbben", "neeeeen", "nnnnnnn"], pal: SP.BASE },
@@ -1571,7 +1788,11 @@
     diamond: { map: SP.maps.DIAMOND, pal: SP.BASE },
     lock: { map: [".kkk.", "k...k", "k...k", "ggggg", "ggKgg", "ggKgg", "ggggg"], pal: { k: "#8d939b", g: "#f4c542", K: "#5a4100" } },
     usb: { map: [".sss.", ".sKs.", ".sss.", "ttttt", "ttttt", "ttttt", "ttttt", ".ttt."], pal: { s: "#c3c9d0", K: "#3b3f45", t: "#12b9b4" } },
-    note: { map: SP.maps.NOTE, pal: { N: "#e5484d" } }
+    note: { map: SP.maps.NOTE, pal: { N: "#e5484d" } },
+    tape: { map: ["kkkkkkkkk", "kwwwwwwwk", "kwOwwwOwk", "kwwwwwwwk", "kkkkkkkkk", ".kk...kk."], pal: { k: "#3b3c42", w: "#f6c445", O: "#1d1d1f" } },
+    disc: { map: ["..ccc..", ".cpcyc.", "ccc.ccc", "cy.k.pc", "ccc.ccc", ".cycpc.", "..ccc.."], pal: { c: "#b8c1cc", p: "#ff9fd8", y: "#8fe3ff", k: "#1d1d1f" } },
+    paper: { map: ["wwwwww", "wkkkkw", "wwwwww", "wkkkww", "wwwwww", "wkkkkw", "wwwwww"], pal: { w: "#ffe98a", k: "#7a6a3a" } },
+    letter: { map: ["eeeeeeeee", "edeeeeede", "eedeeedee", "eeedRdeee", "eeeeeeeee", "eeeeeeeee"], pal: { e: "#f4ead2", d: "#b9a77a", R: "#e3343c" } }
   };
   function drawIcon(c, key) {
     const ic = ICONS[key], g = c.getContext("2d");
@@ -1768,6 +1989,7 @@
     const h = new Date().getHours();
     const custom = (CFG.eigeneSprueche || []).filter(Boolean);
     if (J.mood === "sleep") Talk.say("sleep", { pr: 0 });
+    else if (Math.random() < 0.25) Talk.say("sweet", { pr: 0 });
     else if (S.playing) Talk.say("playing", { pr: 0 });
     else if (custom.length && Math.random() < 0.3) Talk.say(null, { pr: 0, text: custom[Math.floor(Math.random() * custom.length)] });
     else if ((h >= 22 || h < 5) && Math.random() < 0.3) Talk.say("night", { pr: 0 });
@@ -1809,6 +2031,7 @@
         setBind("remain", "-" + fmt(Math.max(0, dur - ct)));
       }
       if (S.playing && sec % 5 === 0) updatePositionState();
+      if (S.playing && sec % 10 === 0) pushNative();
       if (!S.playing) setBind("state", S.hold ? "HOLD" : ct > 0.3 ? "PAUSE" : "STOP");
     }
     bars.forEach((b) => { b.style.transform = "scaleX(" + frac.toFixed(4) + ")"; });
@@ -1866,16 +2089,20 @@
   function staticText() {
     $$("[data-mama]").forEach((e) => { e.textContent = MAMA; });
     $$("[data-buddy-name]").forEach((e) => { e.textContent = NAME; });
-    const tip = $("#ios-hint");
-    const standalone = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
-    if (isIOS && !standalone && !inFrame && !LS.get("iosHintClosed", false)) tip.hidden = false;
-    $("#ios-hint-close").addEventListener("click", () => { tip.hidden = true; LS.set("iosHintClosed", true); });
+    $$("[data-johann]").forEach((e) => { e.textContent = JOHANN; });
+    $$("[data-johann-b]").forEach((e) => { e.textContent = (CFG.ueberlieferer && CFG.ueberlieferer.seiteB) || ""; });
   }
 
   function greet() {
     const h = new Date().getHours();
     const key = h >= 22 || h < 5 ? "greetNight" : h < 11 ? "greetMorning" : h < 18 ? "greetDay" : "greetEvening";
-    Talk.say(key, { pr: 2 });
+    if (HOLIDAY && LINES[HOLIDAY]) {
+      Talk.say(HOLIDAY, { pr: 2 });
+      if (HOLIDAY !== "halloween" && !LS.get("party-" + new Date().toDateString(), false)) {
+        LS.set("party-" + new Date().toDateString(), true);
+        setTimeout(() => confettiFromDevice(160), 400);
+      }
+    } else Talk.say(key, { pr: 2 });
   }
   function bootJulian() {
     J.hidden = false; J.xr = J.tx = 0.5; J.jy = -40; J.vy = 0;
@@ -1895,6 +2122,7 @@
   setupVolWheel();
   setupSwipe();
   setupTilt();
+  setupEggs();
   setVolume(S.vol, true);
   $(".hud") && $(".hud").classList.remove("show");
   layout();
@@ -1905,12 +2133,11 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { layout(); });
   onScroll();
   requestAnimationFrame(frame);
-  if ("serviceWorker" in navigator && !inFrame && (location.protocol === "https:" || location.hostname === "localhost")) {
+  if ("serviceWorker" in navigator && !inFrame && !NATIVE && (location.protocol === "https:" || location.hostname === "localhost")) {
     navigator.serviceWorker.register("sw.js").catch(() => { });
   }
 
-  const bootDelay = S.player === "classic" && !reduced ? 1700 : 500;
-  setTimeout(() => {
+  function startIntro() {
     const hasBrother = CFG.ueberlieferer && (CFG.ueberlieferer.saetze || []).length;
     if (!LS.get("introDone", false) && hasBrother) Intro.start();
     else if (!LS.get("introDone", false)) {
@@ -1918,5 +2145,10 @@
       bootJulian();
       setTimeout(() => { Talk.chain((LINES.first || []).map((s) => ({ text: s }))); confettiFromDevice(140); }, 1000);
     } else bootJulian();
+  }
+  const bootDelay = S.player === "classic" && !reduced ? 1700 : 500;
+  setTimeout(() => {
+    if (NATIVE && S.libState === "permission") S.introPending = true;
+    else startIntro();
   }, bootDelay);
 })();
