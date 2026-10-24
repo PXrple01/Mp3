@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>juliPod</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Der juliPod: vier Retro-Player für Mama, mit Julian darin.">
+<meta name="theme-color" content="#fbfbfd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="juliPod">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Geist:wght@400;500;600;700&family=Jersey+10&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M7 4.8v14.4a1 1 0 0 0 1.5.86l11.6-7.2a1 1 0 0 0 0-1.72L8.5 3.94A1 1 0 0 0 7 4.8z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect fill="currentColor" x="5.5" y="4" width="4.5" height="16" rx="1.2"/><rect fill="currentColor" x="14" y="4" width="4.5" height="16" rx="1.2"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path fill="currentColor" d="M3.5 6.2v11.6a.8.8 0 0 0 1.25.66L12 13.3v4.5a.8.8 0 0 0 1.25.66l8.2-5.8a.8.8 0 0 0 0-1.32l-8.2-5.8A.8.8 0 0 0 12 6.2v4.5L4.75 5.54A.8.8 0 0 0 3.5 6.2z"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path fill="currentColor" d="M20.5 6.2v11.6a.8.8 0 0 1-1.25.66L12 13.3v4.5a.8.8 0 0 1-1.25.66l-8.2-5.8a.8.8 0 0 1 0-1.32l8.2-5.8A.8.8 0 0 1 12 6.2v4.5l7.25-5.16a.8.8 0 0 1 1.25.66z"/></symbol>
+    <symbol id="i-skip" viewBox="0 0 24 24"><path fill="currentColor" d="M5 5.5v13l9-6.5zM16 5.5h3v13h-3z"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path fill="currentColor" d="M19 5.5v13l-9-6.5zM5 5.5h3v13H5z"/></symbol>
+    <symbol id="i-pp" viewBox="0 0 24 24"><path fill="currentColor" d="M2.5 6v12l8-6zM13.5 6h3v12h-3zM18.5 6h3v12h-3z"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect fill="currentColor" x="6" y="6" width="12" height="12" rx="1.5"/></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M16 4h4v4M4 19 20 4M20 16v4h-4M14.5 14.5 20 20M4 5l5 5"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M17 2l3 3-3 3M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3M20 13v2a4 4 0 0 1-4 4H4"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 15V3.5M7 8.5l5-5 5 5M4.5 14v4.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V14"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4 6.5h16M9 6.5V4.5h6v2M6.5 6.5l.9 13a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4l.9-13M10 10.5v6.5M14 10.5v6.5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect fill="currentColor" x="5" y="10.5" width="14" height="10" rx="2"/><path fill="none" stroke="currentColor" stroke-width="2.2" d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+    <symbol id="i-vol-lo" viewBox="0 0 24 24"><path fill="currentColor" d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15.5 9.5a3.5 3.5 0 0 1 0 5"/></symbol>
+    <symbol id="i-vol-hi" viewBox="0 0 24 24"><path fill="currentColor" d="M3 9.5h3.5L11 5.5v13l-4.5-4H3z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M14.5 9.5a3.5 3.5 0 0 1 0 5M17.5 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M8 7l4-4 4 4M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="#top" aria-label="juliPod, nach oben">
+      <canvas class="brand-head" width="10" height="9" aria-hidden="true"></canvas>
+      <span>juliPod</span>
+    </a>
+    <nav class="nav-links" aria-label="Bereiche">
+      <a href="#musik">Musik</a>
+      <a href="#anzug">Outfit</a>
+      <a href="#geheimnisse">Geheimnisse</a>
+      <a href="#brief">Brief</a>
+    </nav>
+    <button class="pill" type="button" data-open-upload>Lieder hinzufügen</button>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <p class="eyebrow reveal"><span>Alles Gute nachträglich, </span><span data-mama>Mama</span></p>
+    <h1 class="headline">
+      <span class="line reveal">Retro außen.</span>
+      <span class="line reveal grad">Julian innen.</span>
+    </h1>
+    <p class="lede reveal">Der juliPod. Vier Player aus der Zeit vor dem Streaming. In jedem wohnt <span data-buddy-name>Julian</span>.</p>
+  </section>
+
+  <section class="stage" id="stage" aria-label="Player">
+    <div class="glow" aria-hidden="true"><i class="g1"></i><i class="g2"></i><i class="g3"></i></div>
+
+    <div class="bubble-wrap">
+      <div class="bubble" id="bubble" aria-hidden="true">
+        <b class="bubble-name"></b>
+        <p class="bubble-text"></p>
+      </div>
+    </div>
+    <p class="sr-only" id="bubble-live" role="status" aria-live="polite"></p>
+
+    <div class="deck" id="deck">
+
+      <!-- 1 · Klickrad -->
+      <div class="slot" data-player="classic">
+        <div class="fit">
+          <div class="device dev-classic">
+            <div class="cl-bezel">
+              <div class="lcd screen">
+                <div class="lcd-bar">
+                  <span class="lcd-state"><svg><use href="#i-play"/></svg></span>
+                  <span class="lcd-head">Jetzt läuft</span>
+                  <span class="batt" aria-hidden="true"><i></i></span>
+                </div>
+                <div class="scene-wrap">
+                  <canvas class="scene" data-scene="classic" aria-label="Er wohnt hier. Tipp ihn an."></canvas>
+                  <div class="hud" aria-hidden="true"><span class="hud-label">Lautstärke</span><div class="hud-track"><i></i></div></div>
+                </div>
+                <div class="lcd-info">
+                  <div class="marquee lcd-title"><span data-bind="title">Happy Birthday</span></div>
+                  <div class="lcd-artist" data-bind="artist"></div>
+                  <div class="lcd-prog"><i data-bind="bar"></i></div>
+                  <div class="lcd-times"><span data-bind="time">0:00</span><span data-bind="remain">-0:00</span></div>
+                </div>
+                <div class="lcd-menu" hidden>
+                  <div class="lcd-bar"><span class="lcd-head">Lieder</span><span class="lcd-count"></span></div>
+                  <ul class="menu-list"></ul>
+                </div>
+                <div class="lcd-boot" aria-hidden="true">
+                  <canvas class="boot-heart" width="7" height="6"></canvas>
+                  <span>Hallo <span data-mama>Mama</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="wheel" data-wheel>
+              <i class="wheel-trail" aria-hidden="true"></i>
+              <button class="wk wk-menu" type="button" data-act="menu" aria-label="Menü mit allen Liedern">MENU</button>
+              <button class="wk wk-next" type="button" data-act="next" aria-label="Nächstes Lied"><svg><use href="#i-skip"/></svg></button>
+              <button class="wk wk-play" type="button" data-act="play" aria-label="Abspielen oder Pause"><svg><use href="#i-pp"/></svg></button>
+              <button class="wk wk-prev" type="button" data-act="prev" aria-label="Vorheriges Lied"><svg><use href="#i-back"/></svg></button>
+              <button class="wheel-center" type="button" data-act="select" aria-label="Auswählen oder mit ihm reden"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 · Kassette -->
+      <div class="slot" data-player="tape">
+        <div class="fit">
+          <div class="device dev-tape">
+            <div class="tp-keys">
+              <button class="key" type="button" data-act="prev" aria-label="Zurückspulen"><svg><use href="#i-prev"/></svg></button>
+              <button class="key key-play" type="button" data-act="play" aria-label="Abspielen oder Pause"><svg><use href="#i-play"/></svg></button>
+              <button class="key" type="button" data-act="next" aria-label="Vorspulen"><svg><use href="#i-next"/></svg></button>
+              <button class="key key-stop" type="button" data-act="stop" aria-label="Stopp"><svg><use href="#i-stop"/></svg></button>
+            </div>
+            <div class="tp-body">
+              <div class="tp-door screen">
+                <div class="cassette">
+                  <i class="screw s1"></i><i class="screw s2"></i><i class="screw s3"></i><i class="screw s4"></i>
+                  <div class="cs-label">
+                    <div class="cs-top">
+                      <b class="cs-side">A</b>
+                      <span class="cs-title" data-bind="title">Mamas Mixtape</span>
+                      <em>C90</em>
+                    </div>
+                    <div class="cs-window">
+                      <div class="reel reel-l"><i class="pack"></i><i class="hub"></i></div>
+                      <i class="cs-tape"></i>
+                      <div class="reel reel-r"><i class="pack"></i><i class="hub"></i></div>
+                    </div>
+                    <div class="cs-bot">Für <span data-mama>Mama</span> ♥</div>
+                  </div>
+                  <div class="cs-mouth"><i></i><i></i><i></i></div>
+                </div>
+                <canvas class="scene" data-scene="tape" aria-label="Er wohnt hinter der Klappe. Tipp ihn an."></canvas>
+                <i class="tp-glass" aria-hidden="true"></i>
+              </div>
+              <div class="tp-strip">
+                <div class="counter" aria-hidden="true">
+                  <span class="dg"><i></i></span><span class="dg"><i></i></span><span class="dg"><i></i></span>
+                </div>
+                <span class="tp-led" aria-hidden="true"></span>
+                <span class="tp-label">Stereo · Auto Reverse</span>
+                <span class="tp-model">JP-87</span>
+              </div>
+            </div>
+            <div class="tp-vol" data-volwheel role="slider" tabindex="0" aria-label="Lautstärke" aria-valuemin="0" aria-valuemax="100" aria-valuenow="85"><i></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 · MP3-Stick -->
+      <div class="slot" data-player="stick">
+        <div class="fit">
+          <div class="device dev-stick">
+            <div class="st-usb" aria-hidden="true"><i></i><i></i></div>
+            <button class="st-cap" type="button" data-act="cap" aria-label="Kappe abnehmen"><i class="st-loop"></i></button>
+            <div class="st-body">
+              <div class="st-bezel">
+                <div class="oled screen">
+                  <div class="oled-top marquee"><span data-bind="title">Happy Birthday</span></div>
+                  <div class="oled-main">
+                    <canvas class="scene" data-scene="stick" aria-label="Er wohnt im Display. Tipp ihn an."></canvas>
+                    <span class="oled-state" data-bind="state">STOP</span>
+                    <span class="oled-time" data-bind="time">0:00</span>
+                    <div class="oled-lock"><svg><use href="#i-lock"/></svg><span>HOLD</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="st-pad">
+                <button class="pd pd-up" type="button" data-act="vol+" aria-label="Lauter"><svg><use href="#i-vol-hi"/></svg></button>
+                <button class="pd pd-right" type="button" data-act="next" aria-label="Nächstes Lied"><svg><use href="#i-skip"/></svg></button>
+                <button class="pd pd-down" type="button" data-act="vol-" aria-label="Leiser"><svg><use href="#i-vol-lo"/></svg></button>
+                <button class="pd pd-left" type="button" data-act="prev" aria-label="Vorheriges Lied"><svg><use href="#i-back"/></svg></button>
+                <button class="pd-center" type="button" data-act="play" aria-label="Abspielen oder Pause"><svg><use href="#i-pp"/></svg></button>
+              </div>
+              <div class="st-foot"><span>MP3</span><i class="st-led" aria-hidden="true"></i><span>256 MB</span></div>
+            </div>
+            <button class="st-hold" type="button" data-act="hold" role="switch" aria-checked="false" aria-label="Tastensperre"><i></i></button>
+            <span class="st-hold-label" aria-hidden="true">HOLD</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 · CD -->
+      <div class="slot" data-player="disc">
+        <div class="fit">
+          <div class="device dev-disc">
+            <div class="dc-lid">
+              <span class="dc-ring-text">juliPod Disc · Anti-Skip 45 s</span>
+              <div class="dc-window screen">
+                <div class="cd"><div class="cd-spin"><span class="cd-label">Mama Mix ♥</span><span class="cd-cap">MP3 · 700 MB</span></div><i class="cd-shine"></i><i class="cd-hole"></i></div>
+                <canvas class="scene" data-scene="disc" aria-label="Er fährt auf der CD mit. Tipp ihn an."></canvas>
+                <i class="dc-glass" aria-hidden="true"></i>
+              </div>
+            </div>
+            <div class="dc-front">
+              <div class="dc-lcd">
+                <span class="dc-track" data-bind="trackno">01</span>
+                <div class="marquee dc-title"><span data-bind="title">Happy Birthday</span></div>
+                <span class="dc-time" data-bind="time">0:00</span>
+                <span class="dc-esp">ESP</span>
+              </div>
+              <div class="dc-btns">
+                <button type="button" data-act="prev" aria-label="Vorheriges Lied"><svg><use href="#i-back"/></svg></button>
+                <button type="button" class="dc-play" data-act="play" aria-label="Abspielen oder Pause"><svg><use href="#i-pp"/></svg></button>
+                <button type="button" data-act="stop" aria-label="Stopp"><svg><use href="#i-stop"/></svg></button>
+                <button type="button" data-act="next" aria-label="Nächstes Lied"><svg><use href="#i-skip"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="switcher" role="tablist" aria-label="Player wählen">
+      <i class="switch-pill" aria-hidden="true"></i>
+      <button type="button" role="tab" data-switch="classic" aria-selected="true">Klickrad<small>2004</small></button>
+      <button type="button" role="tab" data-switch="tape" aria-selected="false">Kassette<small>1987</small></button>
+      <button type="button" role="tab" data-switch="stick" aria-selected="false">Stick<small>2005</small></button>
+      <button type="button" role="tab" data-switch="disc" aria-selected="false">Disc<small>1999</small></button>
+    </div>
+    <p class="swipe-hint">Wischen oder tippen, um den Player zu wechseln</p>
+  </section>
+
+  <section class="now" aria-label="Jetzt läuft">
+    <div class="now-card">
+      <div class="now-art"><img alt="" hidden><canvas width="24" height="24" aria-hidden="true"></canvas></div>
+      <div class="now-meta">
+        <p class="now-kicker">Jetzt läuft</p>
+        <p class="now-title" data-bind="title">Happy Birthday</p>
+        <p class="now-artist" data-bind="artist"></p>
+      </div>
+      <div class="now-scrub">
+        <input type="range" id="scrub" min="0" max="1000" value="0" step="1" aria-label="Stelle im Lied">
+        <div class="now-times"><span data-bind="time">0:00</span><span data-bind="remain">-0:00</span></div>
+      </div>
+      <div class="now-ctrl">
+        <button type="button" class="ic" id="btn-shuffle" aria-pressed="false" aria-label="Zufällige Reihenfolge"><svg><use href="#i-shuffle"/></svg></button>
+        <button type="button" class="ic lg" data-act="prev" aria-label="Vorheriges Lied"><svg><use href="#i-prev"/></svg></button>
+        <button type="button" class="ic xl play-btn" data-act="play" aria-label="Abspielen"><svg class="i-play"><use href="#i-play"/></svg><svg class="i-pause"><use href="#i-pause"/></svg></button>
+        <button type="button" class="ic lg" data-act="next" aria-label="Nächstes Lied"><svg><use href="#i-next"/></svg></button>
+        <button type="button" class="ic" id="btn-repeat" aria-label="Wiederholen: alle"><svg><use href="#i-repeat"/></svg><b class="rep-one">1</b></button>
+      </div>
+      <div class="now-vol" id="now-vol" hidden>
+        <svg><use href="#i-vol-lo"/></svg>
+        <input type="range" id="vol" min="0" max="100" value="85" aria-label="Lautstärke">
+        <svg><use href="#i-vol-hi"/></svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="band band-soft" id="musik">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Deine Musik.</h2>
+        <p>Lade Lieder von deinem Handy hoch. Sie bleiben auf diesem Gerät gespeichert und spielen auch ohne Internet.</p>
+      </div>
+
+      <div class="drop" id="drop">
+        <button type="button" class="cta" data-open-upload><svg><use href="#i-upload"/></svg><span>Lieder auswählen</span></button>
+        <p class="drop-hint" id="drop-hint">MP3, M4A, AAC oder WAV. Auch mehrere auf einmal.</p>
+      </div>
+
+      <div class="ios-hint" id="ios-hint" hidden>
+        <svg class="ios-hint-ic"><use href="#i-share"/></svg>
+        <p><b>Tipp fürs iPhone:</b> Tippe unten auf „Teilen“ und dann auf „Zum Home-Bildschirm“. Öffne den Player danach über das neue Symbol und lade die Lieder dort hoch. Dann bleiben sie sicher gespeichert.</p>
+        <button type="button" class="ic sm" id="ios-hint-close" aria-label="Tipp ausblenden"><svg><use href="#i-close"/></svg></button>
+      </div>
+
+      <ol class="tracks" id="tracks"></ol>
+      <p class="lib-foot" id="lib-foot"></p>
+    </div>
+  </section>
+
+  <section class="band" id="anzug">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Was zieht <span data-buddy-name>Julian</span> heute an?</h2>
+        <p>Creeper-Hoodie, Pokémon-Trainer oder einer der Ninjago-Anzüge. Er zieht sich mit Spinjitzu um.</p>
+      </div>
+      <div class="swatches" id="swatches" role="radiogroup" aria-label="Outfit"></div>
+    </div>
+  </section>
+
+  <section class="band band-soft" id="geheimnisse">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Kleine Geheimnisse.</h2>
+        <p>Er hat ein paar Tricks versteckt. <span class="secret-count" id="secret-count">0 von 8</span> gefunden.</p>
+      </div>
+      <ul class="secrets" id="secrets"></ul>
+    </div>
+  </section>
+
+  <section class="band band-ink" id="brief">
+    <div class="wrap letter">
+      <p class="eyebrow">Ein Brief für dich</p>
+      <div class="letter-text" id="letter"></div>
+      <p class="signature" id="signature"></p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p>Gebaut mit Liebe und ein bisschen Chaos. Herbst 2026.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <canvas class="toast-icon" width="9" height="9" aria-hidden="true"></canvas>
+  <div><b>Fortschritt erzielt!</b><span class="toast-name"></span></div>
+</div>
+<canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
+<input type="file" id="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.flac" multiple hidden>
+
+<script src="config.js"></script>
+<script src="js/sprite.js"></script>
+<script src="js/synth.js"></script>
+<script src="js/store.js"></script>
+<script src="js/lines.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
