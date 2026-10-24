@@ -348,9 +348,9 @@ Insgesamt 188 Sätze.
 ## Johann (Antippen auf Startseite)
 
 - Ich hab dich lieb, Mama!
-- Julian wohnt jetzt im juliPod. Ich hab ihn da reingepackt.
+- Julian wohnt jetzt im juliPod. Hier fühlt er sich wohl. Hier gibt es keine Schule.
 - Ein paar Wochen zu spät, aber dafür mit eingebautem Ninja.
-- Danke, dass du immer meine beste Freundin bist.
+- Danke, dass du immer meine beste Freundin bist ich hab dich ganz doll lieb Mama <3.
 
 ## Erster Besuch Klickrad
 
