@@ -82,10 +82,14 @@ canvas { display: block; }
   border-bottom: 1px solid var(--line);
 }
 .nav-in {
-  max-width: 1024px; margin: 0 auto; height: 52px;
+  height: 52px;
   padding-left: var(--gutter-l); padding-right: var(--gutter-r);
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  display: flex; align-items: center; gap: 12px;
 }
+.nav-space { flex: 1; }
+.side-toggle { border: 0; background: none; color: var(--fg); width: 40px; height: 40px; margin-left: -8px; padding: 0; border-radius: 10px; display: grid; place-items: center; transition: background .2s; }
+.side-toggle svg { width: 24px; height: 24px; }
+.side-toggle:active { background: var(--chip); }
 .brand { display: flex; align-items: center; gap: 9px; color: var(--fg); text-decoration: none; font-weight: 600; font-size: 19px; letter-spacing: -.02em; }
 .brand-head { width: 22px; height: 20px; image-rendering: pixelated; }
 .nav-links { display: none; gap: 28px; font-size: 13px; }
@@ -256,8 +260,9 @@ canvas { display: block; }
 .menu-list li.empty::after { content: none; }
 .lcd-boot {
   position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; align-content: center; gap: 8px;
-  background: #e9eef3; font-size: 21px; pointer-events: none; animation: boot 2.2s var(--ease) forwards;
+  background: #e9eef3; font-size: 21px; pointer-events: none; visibility: hidden;
 }
+.lcd-boot.run { visibility: visible; animation: boot 2.2s var(--ease) forwards; }
 .boot-heart { width: 35px; height: 30px; image-rendering: pixelated; animation: beat 1s ease-in-out infinite; }
 @keyframes boot { 0%, 70% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 @keyframes beat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.18); } 30% { transform: scale(1); } 45% { transform: scale(1.1); } }
@@ -707,3 +712,83 @@ button.dc-ring-text { border: 0; background: none; padding: 4px 0; cursor: point
 .ps p:nth-child(2) { animation-delay: .25s; color: var(--acc-ink-dark); }
 .foot-egg { border: 0; background: none; padding: 0; color: inherit; font: inherit; text-align: left; }
 .foot-secret { margin-top: 8px !important; color: var(--fg); font-weight: 500; animation: rise .7s var(--ease) both; }
+
+/* ── Reiter links ─────────────────────────────── */
+:root { --side-w: 268px; }
+.side {
+  position: fixed; z-index: 55; left: 0; bottom: 0; top: calc(env(safe-area-inset-top, 0px) + 53px);
+  width: min(var(--side-w), 84vw); display: flex; flex-direction: column; gap: 12px;
+  padding: 14px 12px calc(14px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+  background: var(--glass); -webkit-backdrop-filter: saturate(180%) blur(24px); backdrop-filter: saturate(180%) blur(24px);
+  border-right: 1px solid var(--line);
+  transform: translateX(-104%); transition: transform .45s var(--ease); overflow-y: auto;
+}
+.side.open { transform: none; box-shadow: 18px 0 50px -20px rgba(0, 0, 0, .35); }
+.side-nav { display: grid; gap: 2px; }
+.side-nav a {
+  display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 12px;
+  color: var(--fg); text-decoration: none; font-size: 17px; font-weight: 500; transition: background .2s;
+}
+.side-nav a svg { width: 22px; height: 22px; color: var(--acc-ink); flex: none; }
+.side-nav a span { flex: 1; }
+.side-nav a:hover { background: var(--chip); }
+.side-nav a[aria-current="page"] { background: var(--acc-soft); font-weight: 600; }
+.side-count { font-size: 12px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.side-now {
+  margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 16px;
+  background: var(--surface); box-shadow: 0 0 0 1px var(--line);
+}
+.side-art { width: 40px; height: 40px; border-radius: 9px; object-fit: cover; image-rendering: pixelated; background: var(--acc); flex: none; }
+.side-meta { flex: 1; min-width: 0; }
+.side-meta p { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.side-title { font-size: 14px; font-weight: 600; }
+.side-artist { font-size: 12px; color: var(--muted); }
+.side-play { width: 40px; height: 40px; flex: none; }
+.side-play svg { width: 20px; height: 20px; }
+.scrim { position: fixed; inset: 0; z-index: 54; background: rgba(0, 0, 0, .32); opacity: 0; transition: opacity .3s; }
+.scrim.show { opacity: 1; }
+@media (min-width: 1100px) {
+  .side { transform: none; width: var(--side-w); box-shadow: none; }
+  .side-toggle, .scrim { display: none; }
+  main { margin-left: var(--side-w); }
+}
+
+/* ── Ansichten ─────────────────────────────── */
+.view.view-in { animation: viewIn .5s var(--ease) both; }
+@keyframes viewIn { from { opacity: .2; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.view[data-view="julipod"] .stage { padding-top: 18px; }
+
+/* ── Startseite ─────────────────────────────── */
+.hero-cta { margin-top: 26px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 14px 24px; }
+.hero-cta .cta { text-decoration: none; padding: 15px 30px; font-size: 18px; }
+.cta-link { color: var(--acc-ink); font-size: 18px; font-weight: 500; text-decoration: none; }
+.cta-link:hover { text-decoration: underline; }
+.hero-cta.reveal { animation-delay: .55s; }
+
+.gift {
+  position: relative; display: flex; flex-direction: column; align-items: center;
+  padding-block: 10px 64px; padding-left: var(--gutter-l); padding-right: var(--gutter-r); overflow: hidden;
+}
+.gift-glow {
+  position: absolute; left: 50%; top: 40%; width: min(90vw, 520px); aspect-ratio: 1; max-width: 100%; margin-left: max(-45vw, -260px);
+  border-radius: 50%; background: radial-gradient(circle, var(--acc-glow) 0%, transparent 65%); opacity: .22; filter: blur(50px); pointer-events: none;
+}
+.gift .bubble-wrap { height: 104px; }
+.gift-scene { position: relative; z-index: 1; width: min(100%, 440px); height: 190px; image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer; touch-action: manipulation; }
+.slip {
+  position: relative; z-index: 1; margin: 18px 0 0; width: min(100%, 360px); padding: 14px 18px; border-radius: 16px;
+  background: var(--surface); box-shadow: 0 0 0 1px var(--line); display: grid; gap: 6px;
+  font-size: 14px;
+}
+.slip div { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; }
+.slip dt { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding-top: 2px; }
+.slip dd { margin: 0; }
+.slip div:last-child dd { color: var(--acc-ink); font-weight: 600; }
+
+/* ── Outfit-Vorschau ─────────────────────────────── */
+.preview { display: flex; flex-direction: column; align-items: center; margin: -6px 0 18px; }
+.preview .bubble-wrap { height: 92px; }
+.preview-scene { width: min(100%, 300px); height: 200px; image-rendering: pixelated; image-rendering: crisp-edges; }
+
+/* ── Julians Sprung zwischen den Playern ─────────────────────────────── */
+.fly { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 66; pointer-events: none; }

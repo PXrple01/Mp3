@@ -117,7 +117,8 @@ window.LINES = {
     "Wenn ich mal groß bin, will ich so nett sein wie du. Aber mit mehr Minecraft.",
     "Du machst die besten Umarmungen. Das ist wissenschaftlich bewiesen. Von mir.",
     "Johann und ich haben abgestimmt: Du bist die beste Mama. Zwei zu null.",
-    "Psst. Im Menü vom Klickrad gibt es ganz unten ein Geheimnis."
+    "Psst. Im Menü vom Klickrad gibt es ganz unten ein Geheimnis.",
+    "Johann war ein paar Wochen zu spät. Ich war pünktlich! Ich saß ja im Paket."
   ],
   battery: [
     "Akku voll! Mein Akku lädt nur, wenn du da bist, {mama}."
@@ -223,6 +224,34 @@ window.LINES = {
   volMin: ["Psst … Flüstermodus."],
   volHint: ["Lauter und leiser geht mit den Knöpfen an deinem Handy, {mama}!"],
   dizzy: ["Mir ist schwiiindelig! Nicht so viel drehen!"],
+  land: [
+    "Ninja-Sprung! Hast du das gesehen, {mama}?",
+    "Perfekte Landung! Zehn von zehn Punkten.",
+    "Spinjitzu-Salto! Und nichts kaputt gemacht.",
+    "Hui! Ich kann fliegen. Fast."
+  ],
+  land_tape: [
+    "Gelandet in der Kassette! Hier rauscht es so gemütlich.",
+    "Zurück im Jahr 1987. Damals gab es noch keine PS4. Wie habt ihr das ausgehalten?"
+  ],
+  land_disc: [
+    "Sprung auf die CD! Hoffentlich gibt das keinen Kratzer.",
+    "Karussell fahren auf der CD! Mir wird gleich schwindelig."
+  ],
+  land_classic: [
+    "Zurück am Klickrad. Mein Lieblingsplatz!",
+    "Gelandet! Hier drin hab ich genug Platz zum Tanzen."
+  ],
+  land_stick: [
+    "Uff, im Stick ist es eng. Aber gemütlich.",
+    "Gelandet im Stick! Hier passen 60 Lieder rein. Und ich."
+  ],
+  johann: [
+    "Ich hab dich lieb, {mama}!",
+    "Julian wohnt jetzt im juliPod. Ich hab ihn da reingepackt.",
+    "Ein paar Wochen zu spät, aber dafür mit eingebautem Ninja.",
+    "Danke, dass du immer meine beste Freundin bist."
+  ],
   p_classic: ["Der hier hat ein Rad! Wie ein Lenkrad für Musik."],
   p_tape: ["Was ist DAS? Eine Kassette? Wie lädt man da Lieder runter?"],
   p_stick: ["Ein Stick! Da passen 60 Lieder drauf. Früher war das viel!"],

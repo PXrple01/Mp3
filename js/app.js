@@ -35,7 +35,7 @@
     try { const a = document.createElement("audio"); a.volume = 0.5; return Math.abs(a.volume - 0.5) < 0.01; } catch (e) { return false; }
   })();
 
-  const ORDER = ["classic", "tape", "stick", "disc"];
+  const ORDER = ["tape", "disc", "classic", "stick"];
   const DEV_SIZE = { classic: [250, 414], tape: [340, 256], stick: [138, 360], disc: [306, 366] };
   const DEV_GLOW = { classic: "#9ec5ff", tape: "#ff9a4a", stick: "#38e0cf", disc: "#c7a0ff" };
 
@@ -50,6 +50,8 @@
     skips: [], errors: 0, reelBurst: 0, birthdaySaid: false, coverColor: null
   };
   if (!SP.OUTFITS[S.outfit]) S.outfit = "creeper";
+  let VIEW = null; // "start", "julipod", "outfit" oder "geheimnisse"
+  let johannReady = false;
 
   const fmt = (s) => {
     if (!isFinite(s) || s < 0) s = 0;
@@ -306,88 +308,123 @@
     if (J.mood === "dance" && Lv.beatCount % 2 === 0 && !J.hidden) J.note();
   }
 
-  /* ═════════ Sprechblase ═════════ */
-  const bubble = $("#bubble"), bubbleText = $(".bubble-text", bubble), bubbleName = $(".bubble-name", bubble), live = $("#bubble-live");
-  const Talk = {
-    bags: {}, cur: null, typeTimer: 0, hideTimer: 0, lastEnd: 0, nextGap: 22000,
-    pick(key) {
-      const arr = LINES[key];
-      if (!arr || !arr.length) return null;
-      let bag = this.bags[key];
-      if (!bag || !bag.length) {
-        bag = this.bags[key] = shuffleArr(arr.slice());
-        if (bag.length > 1 && bag[bag.length - 1] === this.lastText) bag.unshift(bag.pop());
-      }
-      return bag.pop();
-    },
-    busy() { return !!this.cur; },
-    say(key, o) {
-      o = o || {};
-      const pr = o.pr || 0;
-      if (this.cur && this.cur.pr > pr) return false;
-      if (Intro.active && !o.force) return false;
-      const raw = o.text || this.pick(key);
-      if (!raw) return false;
-      this.show(fill(raw, o), o);
-      return true;
-    },
-    show(text, o) {
-      o = o || {};
-      clearInterval(this.typeTimer); clearTimeout(this.hideTimer);
-      const who = o.who || "julian";
-      bubble.classList.toggle("is-brother", who === "brother");
-      bubble.classList.toggle("is-boys", who === "boys");
-      bubble.classList.toggle("is-shout", o.style === "shout");
-      bubbleName.textContent = who === "brother" ? ((CFG.ueberlieferer && CFG.ueberlieferer.titel) || "Mäßiger Überlieferer") : who === "boys" ? JOHANN + " & " + NAME : NAME;
-      live.textContent = bubbleName.textContent + ": " + text;
-      this.lastText = text;
-      const hold = o.hold || clamp(2400 + text.length * 52, 3000, 8200);
-      this.cur = { pr: o.pr || 0, onEnd: o.onEnd, text, who };
-      bubble.classList.remove("show");
-      void bubble.offsetWidth;
-      bubble.classList.add("show");
-      let i = 0;
-      const speaker = who === "brother" ? Brother : J;
-      if (reduced) { bubbleText.textContent = text; }
-      else {
-        bubbleText.textContent = "";
-        this.typeTimer = setInterval(() => {
-          i += 1 + (text[i] === " " ? 1 : 0);
-          bubbleText.textContent = text.slice(0, i);
-          speaker.talkUntil = now() + 160;
-          if (i >= text.length) clearInterval(this.typeTimer);
-        }, 26);
-      }
-      this.hideTimer = setTimeout(() => this.end(), hold + (reduced ? 0 : text.length * 26));
-    },
-    end() {
-      clearInterval(this.typeTimer); clearTimeout(this.hideTimer);
-      bubbleText.textContent = this.cur ? this.cur.text : bubbleText.textContent;
-      bubble.classList.remove("show");
-      const c = this.cur;
-      this.cur = null;
-      this.lastEnd = now();
-      this.nextGap = 24000 + Math.random() * 22000;
-      if (c && c.onEnd) c.onEnd();
-    },
-    skip() {
-      if (!this.cur) return;
-      if (bubbleText.textContent.length < this.cur.text.length) {
-        clearInterval(this.typeTimer);
-        bubbleText.textContent = this.cur.text;
-        clearTimeout(this.hideTimer);
-        this.hideTimer = setTimeout(() => this.end(), 2200);
-      } else this.end();
-    },
-    chain(items, done) {
-      let i = 0;
-      const step = () => {
-        if (i >= items.length) { if (done) done(); return; }
-        const it = items[i++];
-        this.show(fill(it.text), Object.assign({ pr: 4 }, it, { onEnd: () => setTimeout(step, 280) }));
-      };
-      step();
+  /* ═════════ Sprechblasen ═════════ */
+  const live = $("#bubble-live");
+  const bags = {};
+  let lastPicked = "";
+  function pickLine(key) {
+    const arr = LINES[key];
+    if (!arr || !arr.length) return null;
+    let bag = bags[key];
+    if (!bag || !bag.length) {
+      bag = bags[key] = shuffleArr(arr.slice());
+      if (bag.length > 1 && bag[bag.length - 1] === lastPicked) bag.unshift(bag.pop());
     }
+    lastPicked = bag.pop();
+    return lastPicked;
+  }
+  function createTalk(el, opts) {
+    opts = opts || {};
+    const bubble = el, bubbleText = $(".bubble-text", el), bubbleName = $(".bubble-name", el);
+    return {
+      cur: null, typeTimer: 0, hideTimer: 0, lastEnd: 0, nextGap: 22000,
+      busy() { return !!this.cur; },
+      say(key, o) {
+        o = o || {};
+        const pr = o.pr || 0;
+        if (this.cur && this.cur.pr > pr) return false;
+        if (opts.gate && !o.force && !opts.gate()) return false;
+        const raw = o.text || pickLine(key);
+        if (!raw) return false;
+        this.show(fill(raw, o), o);
+        return true;
+      },
+      show(text, o) {
+        o = o || {};
+        clearInterval(this.typeTimer); clearTimeout(this.hideTimer);
+        const who = o.who || "julian";
+        bubble.classList.toggle("is-brother", who === "brother");
+        bubble.classList.toggle("is-boys", who === "boys");
+        bubble.classList.toggle("is-shout", o.style === "shout");
+        bubbleName.textContent = who === "brother" ? ((CFG.ueberlieferer && CFG.ueberlieferer.titel) || "Mäßiger Überlieferer") : who === "boys" ? JOHANN + " & " + NAME : NAME;
+        if (live) live.textContent = bubbleName.textContent + ": " + text;
+        const hold = o.hold || clamp(2400 + text.length * 52, 3000, 8200);
+        this.cur = { pr: o.pr || 0, onEnd: o.onEnd, text, who };
+        bubble.classList.remove("show");
+        void bubble.offsetWidth;
+        bubble.classList.add("show");
+        let i = 0;
+        const speaker = who === "brother" ? Brother : (opts.speaker ? opts.speaker() : J);
+        if (reduced) { bubbleText.textContent = text; }
+        else {
+          bubbleText.textContent = "";
+          this.typeTimer = setInterval(() => {
+            i += 1 + (text[i] === " " ? 1 : 0);
+            bubbleText.textContent = text.slice(0, i);
+            speaker.talkUntil = now() + 160;
+            if (i >= text.length) clearInterval(this.typeTimer);
+          }, 26);
+        }
+        this.hideTimer = setTimeout(() => this.end(), hold + (reduced ? 0 : text.length * 26));
+      },
+      end() {
+        clearInterval(this.typeTimer); clearTimeout(this.hideTimer);
+        bubbleText.textContent = this.cur ? this.cur.text : bubbleText.textContent;
+        bubble.classList.remove("show");
+        const c = this.cur;
+        this.cur = null;
+        this.lastEnd = now();
+        this.nextGap = 24000 + Math.random() * 22000;
+        if (c && c.onEnd) c.onEnd();
+      },
+      skip() {
+        if (!this.cur) return;
+        if (bubbleText.textContent.length < this.cur.text.length) {
+          clearInterval(this.typeTimer);
+          bubbleText.textContent = this.cur.text;
+          clearTimeout(this.hideTimer);
+          this.hideTimer = setTimeout(() => this.end(), 2200);
+        } else this.end();
+      },
+      chain(items, done) {
+        let i = 0;
+        const step = () => {
+          if (i >= items.length) { if (done) done(); return; }
+          const it = items[i++];
+          this.show(fill(it.text), Object.assign({ pr: 4 }, it, { onEnd: () => setTimeout(step, 280) }));
+        };
+        step();
+      }
+    };
+  }
+  // Julian im Player spricht nur, wenn man ihn auch sieht.
+  const Talk = createTalk($("#bubble"), { gate: () => viewIs("julipod") && !introBusy() });
+  function introBusy() { return Intro.active && (Intro.phase === "drop" || Intro.phase === "shake"); }
+  const GiftTalk = createTalk($("#gift-bubble"));
+  const OutfitTalk = createTalk($("#outfit-bubble"), { speaker: () => Preview });
+
+  /* Kleine Pixel-Leinwand außerhalb der Player (Startseite, Outfit) */
+  function PixelView(canvas, H) {
+    this.c = canvas; this.H = H; this.W = 40; this.ground = H - 3;
+    this.off = document.createElement("canvas");
+    this.o = this.off.getContext("2d");
+    this.g = canvas.getContext("2d");
+  }
+  PixelView.prototype.resize = function () {
+    const w = this.c.clientWidth, h = this.c.clientHeight;
+    if (!w || !h) return false;
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    this.c.width = Math.round(w * dpr); this.c.height = Math.round(h * dpr);
+    this.W = Math.max(24, Math.round(this.H * w / h));
+    this.off.width = this.W; this.off.height = this.H;
+    this.ready = true;
+    return true;
+  };
+  PixelView.prototype.present = function () {
+    const g = this.g;
+    g.imageSmoothingEnabled = false;
+    g.clearRect(0, 0, this.c.width, this.c.height);
+    g.drawImage(this.off, 0, 0, this.W, this.H, 0, 0, this.c.width, this.c.height);
   };
 
   /* ═════════ Szenen (Pixel-Welten in den Displays) ═════════ */
@@ -550,7 +587,7 @@
   function baseMood(t) {
     if (S.playing) return "dance";
     const idle = t - S.lastInput;
-    if (idle > 60000 && document.visibilityState === "visible") return "sleep";
+    if (idle > 60000 && document.visibilityState === "visible" && viewIs("julipod")) return "sleep";
     if (idle > 15000) return "game";
     return "idle";
   }
@@ -892,66 +929,145 @@
     vibrate([30, 40, 70]);
   }
 
-  /* ═════════ Der mäßige Überlieferer (nur einmal) ═════════ */
-  const Brother = { xr: -0.4, talkUntil: 0, walkT: 0 };
+  /* ═════════ Das Paket im Player (nur beim ersten Öffnen) ═════════ */
+  const Brother = { talkUntil: 0, walkT: 0 };
   const Intro = {
     active: false, phase: "", t0: 0, box: null,
     start() {
-      this.active = true; this.phase = "walkin"; this.t0 = now();
-      Brother.xr = -0.45; this.box = { xr: 0.62, placed: false, open: false };
+      this.active = true; this.phase = "drop"; this.t0 = now();
+      this.box = { xr: 0.5, y: -40, vy: 0, open: false };
       J.hidden = true;
     },
     update(t, dt) {
-      const el = t - this.t0;
-      if (this.phase === "walkin") {
-        Brother.xr += 0.3 * dt; Brother.walkT += dt;
-        if (Brother.xr >= 0.2) { Brother.xr = 0.2; this.phase = "drop"; this.t0 = t; this.box.placed = true; this.box.xr = 0.48; }
-      } else if (this.phase === "drop" && el > 450) {
-        this.phase = "talk"; this.t0 = t;
-        const lines = ((CFG.ueberlieferer && CFG.ueberlieferer.saetze) || []).map((s) => ({ text: s, who: "brother" }));
-        Talk.chain(lines, () => { this.phase = "shake"; this.t0 = now(); });
-      } else if (this.phase === "shake" && el > 1100) {
-        this.phase = "pop"; this.t0 = t; this.box.open = true;
+      const el = t - this.t0, b = this.box;
+      if (this.phase === "drop") {
+        b.vy += 300 * dt; b.y += b.vy * dt;
+        if (b.y >= 0) {
+          b.y = 0;
+          if (b.vy > 60) { b.vy = -b.vy * 0.32; vibrate(10); }
+          else { b.vy = 0; this.phase = "shake"; this.t0 = t; }
+        }
+      } else if (this.phase === "shake" && el > 1500) {
+        this.phase = "pop"; this.t0 = t; b.open = true;
         LS.set("introDone", true);
-        J.hidden = false; J.xr = J.tx = this.box.xr; J.jy = -1; J.vy = -120; J.setMood("spin", 1000);
+        setCta();
+        J.hidden = false; J.xr = J.tx = b.xr; J.jy = -1; J.vy = -120; J.setMood("spin", 1000);
         const sc = active();
-        if (sc) Parts.add({ x: sc.xOf(this.box.xr), y: sc.ground - 9, vx: -16, vy: -70, g: 160, life: 1.2, map: SP.maps.BOX.slice(0, 4), pal: SP.BASE });
+        if (sc) Parts.add({ x: sc.xOf(b.xr), y: sc.ground - 9, vx: -16, vy: -70, g: 160, life: 1.2, map: SP.maps.BOX.slice(0, 4), pal: SP.BASE });
         confettiFromDevice(160);
         vibrate(30);
-        Talk.chain((LINES.first || []).map((s) => ({ text: s, who: "julian" })), () => { this.phase = "bye"; this.t0 = now(); });
-      } else if (this.phase === "bye" && el > 1300) {
-        this.phase = "leave"; this.t0 = t;
-      } else if (this.phase === "leave") {
-        Brother.xr -= 0.32 * dt; Brother.walkT += dt;
-        if (Brother.xr < -0.6) {
-          this.phase = "after"; this.active = false;
-          const sc = active();
-          if (sc) for (let i = 0; i < 8; i++) Parts.add({ x: sc.xOf(this.box.xr) + 4, y: sc.ground - 4, vx: (Math.random() - 0.5) * 40, vy: -Math.random() * 30, life: 0.5, color: "#ffffff", fade: true });
-        }
+        Talk.chain((LINES.first || []).map((line) => ({ text: line, who: "julian" })), () => { if (this.phase === "pop") { this.phase = "poof"; this.t0 = now(); } });
+        setTimeout(() => { if (this.phase === "pop") { this.phase = "poof"; this.t0 = now(); } }, 24000);
+      } else if (this.phase === "poof" && el > 300) {
+        this.phase = "after"; this.active = false;
+        const sc = active();
+        if (sc) for (let i = 0; i < 8; i++) Parts.add({ x: sc.xOf(b.xr) + 4, y: sc.ground - 4, vx: (Math.random() - 0.5) * 40, vy: -Math.random() * 30, life: 0.5, color: "#ffffff", fade: true });
       }
     },
     draw(o, sc, t) {
-      const gy = sc.ground;
-      const b = this.box;
-      if (b.placed) {
-        let jx = 0;
-        if (this.phase === "shake") jx = Math.floor(t / (90 - Math.min(60, (t - this.t0) / 20))) % 2 ? 1 : -1;
-        else if (this.phase === "talk" && (t % 2400) < 220) jx = Math.floor(t / 60) % 2 ? 1 : -1;
-        const bx = sc.xOf(b.xr) + 1 + jx;
-        SP.blit(o, b.open ? SP.maps.BOX.slice(4) : SP.maps.BOX, bx, gy - (b.open ? 3 : 7), SP.BASE);
+      const b = this.box, gy = sc.ground;
+      const jx = this.phase === "shake" ? (Math.floor(t / (90 - Math.min(60, (t - this.t0) / 25))) % 2 ? 1 : -1) : 0;
+      const bx = sc.xOf(b.xr) + 1 + jx;
+      SP.blit(o, b.open ? SP.maps.BOX.slice(4) : SP.maps.BOX, bx, gy - (b.open ? 3 : 7) + Math.round(b.y), SP.BASE);
+    }
+  };
+
+  /* ═════════ Startseite: Johann überreicht das Geschenk ═════════ */
+  let introDoneCache = LS.get("introDone", false);
+  const Gift = {
+    v: new PixelView($("#gift-scene"), 34),
+    xr: LS.get("johannSaid", false) ? 0.5 : -0.25, walking: false, started: false, onArrive: null,
+    parts: [], jiggleUntil: 0, nextJiggle: now() + 2600, nextFx: now() + 1200,
+    x() { return Math.round(-12 + this.xr * (this.v.W + 14)); },
+    update(t, dt) {
+      if (this.walking) {
+        this.xr = Math.min(0.5, this.xr + 0.42 * dt);
+        Brother.walkT += dt;
+        if (this.xr >= 0.5) {
+          this.walking = false;
+          const f = this.onArrive; this.onArrive = null;
+          if (f) f();
+        }
       }
-      if (this.phase === "after") return;
-      const pal = SP.BASE;
-      const walking = this.phase === "walkin" || this.phase === "leave";
-      const p = {
-        carry: this.phase === "walkin",
-        wave: this.phase === "bye" || this.phase === "pop",
-        walk: walking ? (Math.floor(Brother.walkT * 6) % 2) + 1 : 0,
-        blink: (t % 3400) < 140,
+      const open = introDoneCache, gy = this.v.ground, bx = this.x() + 1;
+      if (!open && !this.walking && t > this.nextJiggle) { this.jiggleUntil = t + 650; this.nextJiggle = t + 2800 + Math.random() * 3200; }
+      if (!this.walking && t > this.nextFx) {
+        this.nextFx = t + (open ? 650 : 1500) + Math.random() * 700;
+        if (open) this.parts.push({ x: bx + 2 + Math.random() * 4, y: gy - 9, vy: -7, life: 2.6, max: 2.6, map: SP.maps.HEART_S, pal: { R: Math.random() < 0.5 ? "#ff4d6d" : "#ff8fa3" } });
+        else if (S.playing) this.parts.push({ x: bx + 3, y: gy - 14, vy: -6, life: 2.2, max: 2.2, map: SP.maps.NOTE, pal: { N: "#ffd23f" } });
+      }
+      for (const p of this.parts) { p.life -= dt; p.y += p.vy * dt; p.x += Math.sin((p.max - p.life) * 5) * 0.12; }
+      this.parts = this.parts.filter((p) => p.life > 0);
+    },
+    render(t) {
+      const v = this.v;
+      if (!v.ready) return;
+      const o = v.o, gy = v.ground, x = this.x();
+      o.clearRect(0, 0, v.W, v.H);
+      o.fillStyle = "rgba(0,0,0,0.13)";
+      o.fillRect(x - 1, gy + 1, 12, 1);
+      const jig = t < this.jiggleUntil;
+      SP.drawBrother(o, x, gy - 20, {
+        carry: true, boxOpen: introDoneCache,
+        boxDx: jig ? (Math.floor(t / 70) % 2 ? 1 : -1) : 0, boxDy: jig && Math.floor(t / 140) % 2 ? -1 : 0,
+        walk: this.walking ? (Math.floor(Brother.walkT * 6) % 2) + 1 : 0,
+        blink: (t % 3600) < 140,
         talk: t < Brother.talkUntil && Math.floor(t / 110) % 2,
-        headDy: walking ? Math.floor(Brother.walkT * 6) % 2 : 0
-      };
-      SP.drawBrother(o, sc.xOf(Brother.xr), gy - 20, p, pal);
+        headDy: this.walking ? Math.floor(Brother.walkT * 6) % 2 : 0
+      }, SP.BASE);
+      for (const p of this.parts) {
+        o.globalAlpha = clamp(p.life / p.max * 1.5, 0, 1);
+        SP.blit(o, p.map, Math.round(p.x), Math.round(p.y), p.pal);
+      }
+      o.globalAlpha = 1;
+      v.present();
+    }
+  };
+  function setCta() {
+    introDoneCache = LS.get("introDone", false);
+    const b = $("#open-gift");
+    if (b) b.textContent = introDoneCache ? "juliPod öffnen" : "Geschenk auspacken";
+  }
+  function maybeStartJohann() {
+    if (!johannReady || Gift.started || !viewIs("start")) return;
+    Gift.started = true;
+    if (LS.get("johannSaid", false)) { Gift.xr = 0.5; return; }
+    Gift.walking = true;
+    Gift.onArrive = () => {
+      const lines = ((CFG.ueberlieferer && CFG.ueberlieferer.saetze) || []).map((line) => ({ text: line, who: "brother" }));
+      setTimeout(() => GiftTalk.chain(lines, () => LS.set("johannSaid", true)), 300);
+    };
+  }
+  $("#gift-scene").addEventListener("click", () => {
+    bumpInput();
+    if (!introDoneCache) { go("julipod"); return; }
+    if (GiftTalk.busy()) { GiftTalk.skip(); return; }
+    GiftTalk.say("johann", { who: "brother", pr: 1 });
+  });
+
+  /* ═════════ Outfit-Vorschau ═════════ */
+  const Preview = {
+    v: new PixelView($("#outfit-scene"), 26),
+    spinUntil: 0, talkUntil: 0, waveUntil: 0, nextWave: now() + 3000, blinkUntil: 0, nextBlink: now() + 1500,
+    render(t) {
+      const v = this.v;
+      if (!v.ready) return;
+      const o = v.o, gy = v.ground, x = Math.round(v.W / 2) - 5;
+      o.clearRect(0, 0, v.W, v.H);
+      o.fillStyle = "rgba(0,0,0,0.13)";
+      o.fillRect(x - 2, gy + 1, 14, 1);
+      const pal = SP.palette(S.outfit);
+      const spin = t < this.spinUntil;
+      if (t > this.nextBlink) { this.blinkUntil = t + 130; this.nextBlink = t + 2000 + Math.random() * 3000; }
+      if (!spin && t > this.nextWave) { this.waveUntil = t + 1300; this.nextWave = t + 5000 + Math.random() * 4000; }
+      const p = { outfit: S.outfit, eyes: t < this.blinkUntil ? "closed" : "open", mouth: "smile", tail: t * 0.004, dir: 1 };
+      let y = gy - 15;
+      if (spin) { p.armL = p.armR = "up"; p.eyes = "closed"; p.mouth = "o"; p.dir = Math.floor(t / 70) % 2 ? 1 : -1; y -= 3; tornado(o, x + 5, gy, t, false, pal); }
+      else if (t < this.waveUntil) { p.armR = "wave"; p.eyes = "happy"; p.mouth = "grin"; }
+      if (!spin && t < this.talkUntil) p.mouth = Math.floor(t / 110) % 2 ? "open" : "smile";
+      SP.drawJulian(o, x, y, p, pal);
+      if (spin) tornado(o, x + 5, gy, t, true, pal);
+      v.present();
     }
   };
 
@@ -1041,34 +1157,107 @@
   }
 
   let switching = false;
+  function julianPoint(sc) {
+    if (!sc || sc.ground == null || !sc.W) return null;
+    const r = sc.c.getBoundingClientRect();
+    if (!r.width) return null;
+    const cell = r.width / sc.W;
+    return { x: r.left + (sc.xOf(J.xr) + 5) * cell, y: r.top + (sc.ground + 1 + Math.round(J.jy)) * cell, cell };
+  }
   function switchTo(name, dirHint) {
     if (name === S.player || switching || !slots[name]) return;
     bumpInput();
-    const from = slots[S.player], to = slots[name];
-    const dir = dirHint || (ORDER.indexOf(name) > ORDER.indexOf(S.player) ? 1 : -1);
+    const fromName = S.player, from = slots[fromName], to = slots[name];
+    const dir = dirHint || (ORDER.indexOf(name) > ORDER.indexOf(fromName) ? 1 : -1);
     closeMenu();
+    const canFly = !reduced && viewIs("julipod") && !J.hidden && !Door.active && !introBusy();
+    const a = canFly ? julianPoint(scenes[fromName]) : null;
     S.player = name; LS.set("player", name);
     setActiveSlot(name);
     deck.style.height = Math.round(DEV_SIZE[name][1] * fits[name]) + "px";
     Parts.clear();
+    let b = null;
+    if (a) {
+      // Landeplatz im neuen Player messen, bevor er losfliegt
+      J.xr = J.tx = 0.5; J.jy = 0; J.vy = 0;
+      b = julianPoint(scenes[name]);
+      if (b) { J.hidden = true; scenes[fromName].render(now()); }
+    }
     if (!reduced && from.animate) {
       switching = true;
       from.classList.add("is-leaving");
-      from.animate([{ transform: "none", opacity: 1 }, { transform: "translateX(" + (-dir * 46) + "%) rotateY(" + (dir * 62) + "deg) scale(.78)", opacity: 0 }], { duration: 460, easing: "cubic-bezier(.6,0,.4,1)" })
-        .onfinish = () => from.classList.remove("is-leaving");
-      const a = to.animate([{ transform: "translateX(" + (dir * 46) + "%) rotateY(" + (-dir * 62) + "deg) scale(.78)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 780, easing: "cubic-bezier(.16,1.15,.3,1)" });
-      a.onfinish = () => { switching = false; };
-      setTimeout(() => { switching = false; }, 900);
+      from.animate([
+        { transform: "none", opacity: 1 },
+        { transform: "translateX(" + (-dir * 125) + "%) rotate(" + (-dir * 9) + "deg)", opacity: 0.15 }
+      ], { duration: 620, easing: "cubic-bezier(.55,0,.8,.35)" }).onfinish = () => from.classList.remove("is-leaving");
+      to.animate([
+        { transform: "translateX(" + (dir * 125) + "%) rotate(" + (dir * 9) + "deg)", opacity: 0.15 },
+        { transform: "none", opacity: 1 }
+      ], { duration: 760, delay: 140, easing: "cubic-bezier(.2,.85,.25,1.06)", fill: "backwards" });
+      setTimeout(() => { switching = false; }, b ? 1150 : 950);
     }
     const scr = $(".screen", to);
-    if (scr && !reduced) { scr.classList.remove("power"); void scr.offsetWidth; scr.classList.add("power"); }
-    if (!J.hidden && !Door.active && !(Intro.active && Intro.phase !== "after")) { J.jy = -26; J.vy = 0; }
+    if (scr && !reduced) { scr.classList.remove("power"); void scr.offsetWidth; setTimeout(() => scr.classList.add("power"), 480); }
     refreshMarquees();
-    if (!S.seen[name]) {
+    const firstVisit = !S.seen[name];
+    if (firstVisit) {
       S.seen[name] = true; LS.set("seen", S.seen);
-      Talk.say("p_" + name, { pr: 2 });
       if (ORDER.every((n) => S.seen[n])) unlock("players");
-    } else if (Math.random() < 0.35) Talk.say("p_" + name, { pr: 1 });
+    }
+    const speak = () => Talk.say(firstVisit ? "p_" + name : (Math.random() < 0.6 ? "land_" + name : "land"), { pr: 4 });
+    if (a && b) {
+      flyJulian(a, b, dir, () => {
+        J.hidden = false; J.jy = 0; J.vy = 0;
+        dust(); J.setMood("hop", 700); vibrate(15);
+        speak();
+      });
+    } else {
+      if (canFly) { J.jy = -26; J.vy = 0; }
+      speak();
+    }
+  }
+
+  /* Julian springt im Salto von einem Player zum nächsten */
+  const flyCv = $("#fly");
+  function flyJulian(a, b, dir, done) {
+    const g = flyCv.getContext("2d");
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    flyCv.width = Math.round(innerWidth * dpr); flyCv.height = Math.round(innerHeight * dpr);
+    flyCv.hidden = false;
+    const pal = SP.palette(S.outfit);
+    const spr = document.createElement("canvas"); spr.width = 16; spr.height = 20;
+    SP.drawJulian(spr.getContext("2d"), 3, 2, { outfit: S.outfit, eyes: "happy", mouth: "o", armL: "up", armR: "up", legL: 1, legR: 1, dir: dir, tail: 1 }, pal);
+    const trail = [], cols = [pal.L, pal.H, "#ffffff"];
+    const T = 1000, t0 = now();
+    const peak = Math.max(110, Math.abs(b.x - a.x) * 0.3 + Math.abs(b.y - a.y) * 0.5);
+    vibrate(10);
+    const step = () => {
+      const t = Math.min(1, (now() - t0) / T);
+      const ex = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      const x = a.x + (b.x - a.x) * ex;
+      const y = a.y + (b.y - a.y) * t - peak * 4 * t * (1 - t);
+      const cell = a.cell + (b.cell - a.cell) * t;
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.clearRect(0, 0, innerWidth, innerHeight);
+      g.imageSmoothingEnabled = false;
+      trail.push({ x: x + (Math.random() - 0.5) * cell * 4, y: y - 7.5 * cell + (Math.random() - 0.5) * cell * 4, s: cell * 0.9, life: 1, c: cols[trail.length % 3] });
+      if (trail.length > 26) trail.shift();
+      for (const p of trail) {
+        p.life -= 0.06;
+        if (p.life <= 0) continue;
+        g.globalAlpha = p.life * 0.7; g.fillStyle = p.c;
+        g.fillRect(p.x - p.s / 2, p.y - p.s / 2, p.s, p.s);
+      }
+      g.globalAlpha = 1;
+      g.save();
+      g.translate(x, y - 7.5 * cell);
+      g.rotate(dir * ex * Math.PI * 2);
+      g.drawImage(spr, -8 * cell, -9.5 * cell, 16 * cell, 20 * cell);
+      g.restore();
+      if (t < 1) requestAnimationFrame(step);
+      else { g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, flyCv.width, flyCv.height); flyCv.hidden = true; done(); }
+    };
+    requestAnimationFrame(step);
   }
 
   /* Bindungen: Titel, Zeiten, Fortschritt */
@@ -1652,9 +1841,10 @@
     onLibraryChanged(reason) {
       loadLibrary(true).then(() => {
         // Das Intro wartet, bis Android die Erlaubnis-Abfrage geschlossen hat.
-        if (S.introPending && (reason === "permission" || S.libState !== "permission")) {
-          S.introPending = false;
-          setTimeout(startIntro, 700);
+        if (S.johannPending && (reason === "permission" || S.libState !== "permission")) {
+          S.johannPending = false;
+          johannReady = true;
+          setTimeout(maybeStartJohann, 600);
         }
       });
     }
@@ -1679,10 +1869,11 @@
       $$(".sw").forEach((b) => b.setAttribute("aria-checked", String(b.dataset.outfit === key)));
       updateMediaSession();
     };
-    if (animate && prev !== key && !J.hidden && !Door.active) {
-      J.setMood("spin", 1200); J.jump(-44);
+    if (animate && prev !== key) {
+      Preview.spinUntil = now() + 1200;
       setTimeout(apply, 450);
-      Talk.say("o_" + key, { pr: 2 });
+      OutfitTalk.say("o_" + key, { pr: 2 });
+      vibrate(15);
     } else apply();
   }
   function renderSwatches() {
@@ -1739,6 +1930,8 @@
   }
   function renderNowArt() {
     const t = cur();
+    const sa = $(".side-art");
+    if (sa) { sa.onerror = () => { sa.onerror = null; sa.src = thumbData(); }; sa.src = (t && t.cover) || thumbData(); }
     const img = $(".now-art img"), cv = $(".now-art canvas");
     if (t && t.cover) { img.src = t.cover; img.hidden = false; cv.hidden = true; }
     else {
@@ -1817,6 +2010,7 @@
       box.appendChild(li);
     });
     $("#secret-count").textContent = n + " von " + SECRETS.length;
+    $("#side-count").textContent = n + "/" + SECRETS.length;
   }
   const toastQ = [];
   let toastBusy = false;
@@ -1984,7 +2178,7 @@
 
   // Ab und zu etwas sagen
   setInterval(() => {
-    if (document.hidden || (Intro.active && Intro.phase !== "after") || Door.active || J.hidden) return;
+    if (document.hidden || !viewIs("julipod") || (Intro.active && Intro.phase !== "after") || Door.active || J.hidden) return;
     if (Talk.busy() || now() - Talk.lastEnd < Talk.nextGap) return;
     const h = new Date().getHours();
     const custom = (CFG.eigeneSprueche || []).filter(Boolean);
@@ -2015,7 +2209,9 @@
     updateJ(t, dt);
     Parts.update(dt);
     const sc = active();
-    if (sc && sc.W) sc.render(t);
+    if (VIEW === "julipod") { if (sc && sc.W) sc.render(t); }
+    else if (VIEW === "start") { Gift.update(t, dt); Gift.render(t); }
+    else if (VIEW === "outfit") Preview.render(t);
 
     // Zeiten & Fortschritt
     const d = audio.duration, ct = audio.currentTime || 0;
@@ -2137,18 +2333,72 @@
     navigator.serviceWorker.register("sw.js").catch(() => { });
   }
 
-  function startIntro() {
-    const hasBrother = CFG.ueberlieferer && (CFG.ueberlieferer.saetze || []).length;
-    if (!LS.get("introDone", false) && hasBrother) Intro.start();
-    else if (!LS.get("introDone", false)) {
-      LS.set("introDone", true);
-      bootJulian();
-      setTimeout(() => { Talk.chain((LINES.first || []).map((s) => ({ text: s }))); confettiFromDevice(140); }, 1000);
-    } else bootJulian();
+  /* ═════════ Seiten & Reiter ═════════ */
+  const VIEWS = ["start", "julipod", "outfit", "geheimnisse"];
+  function viewIs(v) { return VIEW === v; }
+  function routeFromHash() {
+    const h = (location.hash || "").replace("#", "");
+    if (h === "brief") return { view: "start", anchor: "brief" };
+    return { view: VIEWS.indexOf(h) >= 0 ? h : "start" };
   }
-  const bootDelay = S.player === "classic" && !reduced ? 1700 : 500;
+  function go(v) {
+    if (location.hash !== "#" + v) location.hash = v;
+    else showView(v);
+  }
+  const side = $("#side"), scrim = $("#scrim"), sideToggle = $("#side-toggle");
+  function openSide() {
+    side.classList.add("open");
+    scrim.hidden = false;
+    requestAnimationFrame(() => scrim.classList.add("show"));
+    sideToggle.setAttribute("aria-expanded", "true");
+  }
+  function closeSide() {
+    side.classList.remove("open");
+    scrim.classList.remove("show");
+    sideToggle.setAttribute("aria-expanded", "false");
+    setTimeout(() => { if (!side.classList.contains("open")) scrim.hidden = true; }, 320);
+  }
+  sideToggle.addEventListener("click", () => { if (side.classList.contains("open")) closeSide(); else openSide(); });
+  scrim.addEventListener("click", closeSide);
+  $$("[data-nav]").forEach((a) => a.addEventListener("click", closeSide));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSide(); });
+
+  let playerEntered = false;
+  function enterPlayer() {
+    layout();
+    if (playerEntered) return;
+    playerEntered = true;
+    const boot = S.player === "classic" && !reduced;
+    if (boot) $(".lcd-boot").classList.add("run");
+    setTimeout(() => {
+      if (!LS.get("introDone", false)) Intro.start();
+      else bootJulian();
+    }, boot ? 1500 : 450);
+  }
+  function showView(v, anchor) {
+    const changed = v !== VIEW;
+    VIEW = v;
+    $$(".view").forEach((el) => { el.hidden = el.dataset.view !== v; });
+    $$("[data-nav]").forEach((a) => { if (a.dataset.nav === v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    closeSide();
+    if (changed) {
+      const el = $('.view[data-view="' + v + '"]');
+      el.classList.remove("view-in"); void el.offsetWidth; el.classList.add("view-in");
+      if (!anchor) window.scrollTo(0, 0);
+    }
+    if (anchor) setTimeout(() => { const a = $("#" + anchor); if (a) a.scrollIntoView({ behavior: reduced ? "auto" : "smooth" }); }, 80);
+    if (v === "julipod") enterPlayer();
+    if (v === "start") { Gift.v.resize(); onScroll(); maybeStartJohann(); }
+    if (v === "outfit") Preview.v.resize();
+  }
+  window.addEventListener("hashchange", () => { const r = routeFromHash(); showView(r.view, r.anchor); });
+  window.addEventListener("resize", () => { Gift.v.resize(); Preview.v.resize(); });
+
+  setCta();
+  const first = routeFromHash();
+  showView(first.view, first.anchor);
   setTimeout(() => {
-    if (NATIVE && S.libState === "permission") S.introPending = true;
-    else startIntro();
-  }, bootDelay);
+    if (NATIVE && S.libState === "permission") S.johannPending = true;
+    else { johannReady = true; maybeStartJohann(); }
+  }, 900);
 })();

@@ -21,13 +21,13 @@ window.MAMA_CONFIG = {
   // Mamas Geburtstag als "TT.MM", z. B. "14.10". Dann gibt es an dem Tag eine Überraschung.
   geburtstag: "",
 
-  // Der große Bruder. Er taucht nur ein einziges Mal auf: beim allerersten Öffnen.
+  // Der große Bruder. Er überreicht auf der Startseite das Geschenk und sagt seine Sätze nur beim ersten Mal.
   ueberlieferer: {
     name: "Johann",
     titel: "Mäßiger Überlieferer",
     saetze: [
       "Hallo {mama}! Hier spricht der mäßige Überlieferer.",
-      "Sorry, dass dein Geschenk so spät kommt. Die Verspätung tut mir echt leid.",
+      "Sorry, dass dein Geschenk ein paar Wochen zu spät kommt. Die Verspätung tut mir echt leid.",
       "Viel Spaß mit deinem juliPod! Ich hab dich lieb."
     ],
     // Steht versteckt auf Seite B der Kassette.
@@ -60,7 +60,7 @@ window.MAMA_CONFIG = {
   // Der Brief unten auf der Seite. Jede Zeile ist ein Absatz.
   brief: [
     "Liebe Mama,",
-    "dein Geburtstag ist schon ein paar Tage her. Das Geschenk kommt spät, aber es kommt von Herzen.",
+    "dein Geburtstag ist schon ein paar Wochen her. Das Geschenk kommt spät, aber es kommt von Herzen.",
     "In diesem juliPod steckt deine Musik und jemand, der dich sehr lieb hat. Draußen baut er manchmal Mist. Hier drin ist er nur lieb, versprochen.",
     "Danke für alles, was du jeden Tag für uns machst. Alles Gute nachträglich!"
   ],

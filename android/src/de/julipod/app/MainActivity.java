@@ -123,7 +123,9 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        moveTaskToBack(true);
+        // Zurück zur vorherigen Seite der App; auf der Startseite die App nur verstecken, damit die Musik weiterläuft.
+        if (web != null && web.canGoBack()) web.goBack();
+        else moveTaskToBack(true);
     }
 
     @Override

@@ -24,12 +24,16 @@ Später neue Lieder? Einfach in denselben Ordner kopieren, die App zeigt sie bei
 
 ### 3. Beim ersten Öffnen
 
-Die App fragt nach zwei Erlaubnissen: **Musik und Audio** (damit sie den Ordner lesen darf) und **Benachrichtigungen** (für die Steuerung auf dem Sperrbildschirm). Beides erlauben. Danach erscheint einmalig der mäßige Überlieferer mit seinem Paket.
+Die App fragt nach zwei Erlaubnissen: **Musik und Audio** (damit sie den Ordner lesen darf) und **Benachrichtigungen** (für die Steuerung auf dem Sperrbildschirm). Beides erlauben. Danach überreicht der mäßige Überlieferer auf der Startseite sein Paket.
 
 **Tipp:** Öffne die App vor der Übergabe nicht auf Mamas Handy, sonst verpasst sie die Überraschung. Zum Testen kannst du die App auf deinem eigenen Android-Handy installieren.
 
 ## Was die App kann
 
+- **Startseite:** Text, ein Button zum Auspacken, Johann als kleiner Pixel-Überlieferer mit dem Paket (und Lieferschein: „ein paar Wochen zu spät“) und darunter der Brief. Johann sagt seine Sätze nur beim ersten Mal.
+- **Reiter links** (am Handy über das Symbol oben links): Start, juliPod, Outfit und Geheimnisse.
+- **Auspacken:** Beim ersten Öffnen des juliPods fällt das Paket ins Display, wackelt, und Julian springt heraus.
+- **Player-Wechsel:** Der alte Player fliegt nach links raus, der neue von rechts rein. Julian springt im Salto hinüber, landet und sagt etwas. Reihenfolge wie in der Geschichte: Kassette (1987), Disc (1999), Klickrad (2004), Stick (2005).
 - **Vier Player**, zwischen denen man wischen oder tippen kann. Am Klickrad dreht man, die Kassettenrollen laufen mit, die CD dreht sich, der Stick hat Kappe und HOLD-Schalter.
 - **Julian** in Pixel-Art, mit Creeper-Hoodie, Pokémon-Trainer-Outfit oder einem der sechs Ninjago-Anzüge.
 - **Läuft im Hintergrund weiter**, auch bei gesperrtem Handy, mit Steuerung in der Benachrichtigung, auf dem Sperrbildschirm und über Kopfhörer-Tasten. Zieht man die Kopfhörer ab, pausiert die Musik.

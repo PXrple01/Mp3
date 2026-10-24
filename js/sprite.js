@@ -302,7 +302,8 @@
     // Arme
     if (p.carry) {
       rect(g, x - 1, y + 10, 2, 4, pal.J); rect(g, x + 9, y + 10, 2, 4, pal.J);
-      blit(g, BOX, x + 1, y + 9, pal);
+      if (p.boxOpen) blit(g, BOX.slice(4), x + 1 + (p.boxDx || 0), y + 13, pal);
+      else blit(g, BOX, x + 1 + (p.boxDx || 0), y + 9 + (p.boxDy || 0), pal);
       dot(g, x, y + 13, pal.S); dot(g, x + 9, y + 13, pal.S);
     } else if (p.wave) {
       const off = Math.floor(performance.now() / 180) % 2;
