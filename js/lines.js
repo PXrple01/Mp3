@@ -219,8 +219,8 @@ window.LINES = {
     "JETZT LASST MICH ALLE IN RUHE!"
   ],
   "doorKnock": [
-    "Besetzt!",
-    "Ich bin nicht da!",
+    "Besetzt ich spiel mit Daisy!",
+    "Ich bin nicht da ihr Blödis!",
     "Geh weg! … Nicht du, {mama}. Doch, du auch."
   ],
   "doorOut": [

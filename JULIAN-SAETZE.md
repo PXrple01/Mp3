@@ -267,8 +267,8 @@ Insgesamt 188 Sätze.
 
 ## Anklopfen
 
-- Besetzt!
-- Ich bin nicht da!
+- Besetzt ich spiel mit Daisy!
+- Ich bin nicht da ihr Blödis!
 - Geh weg! … Nicht du, Mama. Doch, du auch.
 
 ## Kommt wieder raus
