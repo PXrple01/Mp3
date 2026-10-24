@@ -321,9 +321,9 @@ Insgesamt 188 Sätze.
 ## Landung
 
 - Ninja-Sprung! Hast du das gesehen, Mama?
-- Perfekte Landung! Zehn von zehn Punkten.
+- Perfekte Landung! Zehn von zehn Punkten. Daisy wäre stolz.
 - Spinjitzu-Salto! Und nichts kaputt gemacht.
-- Hui! Ich kann fliegen. Fast.
+- Hui! Ich kann fliegen!.
 
 ## Landung Kassette
 

@@ -262,9 +262,9 @@ window.LINES = {
   ],
   "land": [
     "Ninja-Sprung! Hast du das gesehen, {mama}?",
-    "Perfekte Landung! Zehn von zehn Punkten.",
+    "Perfekte Landung! Zehn von zehn Punkten. Daisy wäre stolz.",
     "Spinjitzu-Salto! Und nichts kaputt gemacht.",
-    "Hui! Ich kann fliegen. Fast."
+    "Hui! Ich kann fliegen!."
   ],
   "land_tape": [
     "Gelandet in der Kassette! Hier rauscht es so gemütlich.",
