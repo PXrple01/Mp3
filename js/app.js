@@ -346,7 +346,7 @@
         bubble.classList.toggle("is-brother", who === "brother");
         bubble.classList.toggle("is-boys", who === "boys");
         bubble.classList.toggle("is-shout", o.style === "shout");
-        bubbleName.textContent = who === "brother" ? ((CFG.ueberlieferer && CFG.ueberlieferer.titel) || "Mäßiger Überlieferer") : who === "boys" ? JOHANN + " & " + NAME : NAME;
+        bubbleName.textContent = who === "brother" ? ((CFG.ueberlieferer && CFG.ueberlieferer.titel) || "Liebevoller Überlieferer") : who === "boys" ? JOHANN + " & " + NAME : NAME;
         if (live) live.textContent = bubbleName.textContent + ": " + text;
         const hold = o.hold || clamp(2400 + text.length * 52, 3000, 8200);
         this.cur = { pr: o.pr || 0, onEnd: o.onEnd, text, who };

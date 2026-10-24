@@ -24,7 +24,7 @@ Später neue Lieder? Einfach in denselben Ordner kopieren, die App zeigt sie bei
 
 ### 3. Beim ersten Öffnen
 
-Die App fragt nach zwei Erlaubnissen: **Musik und Audio** (damit sie den Ordner lesen darf) und **Benachrichtigungen** (für die Steuerung auf dem Sperrbildschirm). Beides erlauben. Danach überreicht der mäßige Überlieferer auf der Startseite sein Paket.
+Die App fragt nach zwei Erlaubnissen: **Musik und Audio** (damit sie den Ordner lesen darf) und **Benachrichtigungen** (für die Steuerung auf dem Sperrbildschirm). Beides erlauben. Danach überreicht der liebevolle Überlieferer auf der Startseite sein Paket.
 
 **Tipp:** Öffne die App vor der Übergabe nicht auf Mamas Handy, sonst verpasst sie die Überraschung. Zum Testen kannst du die App auf deinem eigenen Android-Handy installieren.
 

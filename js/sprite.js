@@ -26,7 +26,7 @@
     K: "#2b2d34", w: "#e9edf2", r: "#ff4b5c", l: "#3aa0ff",
     C: "#4fe3e0", c: "#2bb3b8", W: "#ffffff", T: "#8a5a2b", R: "#e3343c",
     X: "#1c2a1d", N: "#ffffff", Z: "#ffffff",
-    // Mäßiger Überlieferer
+    // Liebevoller Überlieferer
     Y: "#cfd0d4", y: "#8d8e95", O: "#2e2e33", o: "#d7ecf7", V: "#1f2a48", J: "#e8e8ec", u: "#34363d",
     // Paket + Tür
     b: "#c99257", d: "#8f6232", e: "#a8743e", n: "#5e3a1a", g: "#f4c542", k: "#1a120b"
@@ -290,7 +290,7 @@
     else if (m === "shout") { rect(g, x + 3, hy + 6, 4, 3, pal.E); rect(g, x + 4, hy + 8, 2, 1, "#e0475a"); }
   }
 
-  /* Der mäßige Überlieferer. Füße bei y + 20. */
+  /* Der liebevolle Überlieferer. Füße bei y + 20. */
   function drawBrother(g, x, y, p, pal) {
     x = Math.round(x); y = Math.round(y);
     const walk = p.walk || 0;

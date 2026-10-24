@@ -24,9 +24,9 @@ window.MAMA_CONFIG = {
   // Der große Bruder. Er überreicht auf der Startseite das Geschenk und sagt seine Sätze nur beim ersten Mal.
   ueberlieferer: {
     name: "Johann",
-    titel: "Mäßiger Überlieferer",
+    titel: "Liebevoller Überlieferer",
     saetze: [
-      "Hallo {mama}! Hier spricht der mäßige Überlieferer.",
+      "Hallo {mama}! Hier spricht der liebevolle Überlieferer.",
       "Sorry, dass dein Geschenk ein paar Wochen zu spät kommt. Die Verspätung tut mir echt leid.",
       "Viel Spaß mit deinem juliPod! Ich hab dich lieb."
     ],
