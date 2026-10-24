@@ -48,7 +48,7 @@ import java.util.Map;
 
 /**
  * Zeigt den juliPod in einer WebView. Die Seite liegt in den Assets und wird unter
- * https://localhost/ ausgeliefert, die Musik kommt aus dem Ordner "juliPod" auf dem Handy.
+ * https://localhost/ ausgeliefert, die Musik kommt nur aus dem Ordner "julianpodmusic" auf dem Handy.
  */
 public class MainActivity extends Activity {
     static final String HOST = "localhost";
@@ -389,8 +389,8 @@ public class MainActivity extends Activity {
                 res.put("tracks", new JSONArray());
                 return res.toString();
             }
+            // Nur der eigene Ordner, niemals andere Musik auf dem Handy.
             List<JSONObject> list = query(folder);
-            if (list.isEmpty()) list = query(null);
             JSONArray arr = new JSONArray();
             for (JSONObject o : list) arr.put(o);
             res.put("tracks", arr);
@@ -400,7 +400,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Alle Lieder im Ordner (oder, wenn folder null ist, alle Musik auf dem Handy). */
+    /** Alle Lieder im Ordner (auch in Unterordnern). */
     private List<JSONObject> query(String folder) throws Exception {
         boolean q = Build.VERSION.SDK_INT >= 29;
         List<String> proj = new ArrayList<>();
@@ -410,17 +410,12 @@ public class MainActivity extends Activity {
         if (q) proj.add("relative_path");
         String sel;
         String[] args;
-        if (folder != null) {
-            if (q) {
-                sel = "relative_path LIKE ?";
-                args = new String[]{"%" + folder + "/%"};
-            } else {
-                sel = MediaStore.Audio.Media.DATA + " LIKE ?";
-                args = new String[]{"%/" + folder + "/%"};
-            }
+        if (q) {
+            sel = "relative_path LIKE ?";
+            args = new String[]{"%" + folder + "/%"};
         } else {
-            sel = MediaStore.Audio.Media.IS_MUSIC + " != 0";
-            args = null;
+            sel = MediaStore.Audio.Media.DATA + " LIKE ?";
+            args = new String[]{"%/" + folder + "/%"};
         }
         final List<JSONObject> out = new ArrayList<>();
         final Map<JSONObject, String> sortKey = new HashMap<>();
@@ -474,7 +469,7 @@ public class MainActivity extends Activity {
     final class Bridge {
         @JavascriptInterface
         public String library(String folder) {
-            String f = folder == null || folder.trim().isEmpty() ? "juliPod" : folder.trim();
+            String f = folder == null || folder.trim().isEmpty() ? "julianpodmusic" : folder.trim();
             return MainActivity.this.library(f);
         }
 

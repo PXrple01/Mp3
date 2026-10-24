@@ -15,8 +15,8 @@ Mama muss nichts einrichten und keine Musik hochladen. Die Lieder legt Johann ei
 ### 2. Musik draufmachen (der 1-GB-Ordner)
 
 1. Ihr Handy per USB-Kabel an den Computer anschließen und am Handy „Dateiübertragung“ wählen.
-2. Den Musikordner in den Ordner **Music** (oder „Musik“) auf dem Handy kopieren und ihn **juliPod** nennen. Ergebnis: `Music/juliPod/…`. Unterordner sind erlaubt.
-3. Fertig. Die App sortiert die Lieder nach Ordner und Dateiname. Titel, Interpret und Cover liest Android aus den MP3s.
+2. Den Musikordner in den Ordner **Music** (oder „Musik“) auf dem Handy kopieren und ihn **julianpodmusic** nennen. Ergebnis: `Music/julianpodmusic/…`. Unterordner sind erlaubt.
+3. Fertig. Die App nimmt nur Lieder aus diesem Ordner, andere Musik auf dem Handy bleibt außen vor. Sie sortiert die Lieder nach Ordner und Dateiname. Titel, Interpret und Cover liest Android aus den MP3s.
 
 Später neue Lieder? Einfach in denselben Ordner kopieren, die App zeigt sie beim nächsten Öffnen an.
 

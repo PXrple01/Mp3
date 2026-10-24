@@ -1686,7 +1686,7 @@
     let state = "ok";
     if (NATIVE) {
       try {
-        const res = JSON.parse(NATIVE.library(String(CFG.musikOrdner || "juliPod")));
+        const res = JSON.parse(NATIVE.library(String(CFG.musikOrdner || "julianpodmusic")));
         if (res.needPermission) state = "permission";
         (res.tracks || []).forEach((t) => list.push({
           id: "n" + t.id, nid: t.id, kind: "native", title: t.title || "Unbekanntes Lied", artist: t.artist || "",
@@ -1730,7 +1730,7 @@
   }
   function renderLibNote() {
     const st = S.libState, txt = $(".lib-note-text", libNote), btn = $("#lib-note-btn");
-    const folder = CFG.musikOrdner || "juliPod";
+    const folder = CFG.musikOrdner || "julianpodmusic";
     if (st === "permission") {
       libNote.hidden = false; btn.hidden = false;
       txt.textContent = "Der juliPod braucht einmal deine Erlaubnis, damit er die Musik auf deinem Handy abspielen darf.";

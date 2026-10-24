@@ -15,8 +15,8 @@ window.MAMA_CONFIG = {
   // "creeper" (Hoodie), "trainer" (Pokémon), "gruen", "rot", "blau", "schwarz", "weiss" oder "gold" (Ninjago).
   outfit: "creeper",
 
-  // Ordner auf Mamas Handy, in dem die Musik liegt (Android-App). Groß/klein ist egal.
-  musikOrdner: "juliPod",
+  // Ordner auf Mamas Handy, aus dem die App die Musik nimmt (nur dieser, sonst nichts). Groß/klein ist egal.
+  musikOrdner: "julianpodmusic",
 
   // Mamas Geburtstag als "TT.MM", z. B. "14.10". Dann gibt es an dem Tag eine Überraschung.
   geburtstag: "",
